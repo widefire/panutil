@@ -4,6 +4,9 @@
 #include <winsock2.h>
 #pragma comment(lib,"ws2_32.lib")
 #else
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <errno.h>
 #endif // _WIN32
 
 namespace panutils {
