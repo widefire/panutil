@@ -12,5 +12,5 @@ void TestClient()
 	//panutils::SetSocketNoBlocking(fd, false);
 	int ret=panutils::SocketSend(fd, buf, 8,err);
 	ret = panutils::SocketRecv(fd, cache, 20, err);
-	std::cout << cache << std::endl;
+	std::cout << cache<<buf << std::endl;
 }

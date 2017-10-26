@@ -1,5 +1,10 @@
 #ifndef _WIN32
 #include <signal.h>
+#include <string.h>
+#include <netinet/in.h>
+#include <unistd.h>
+#include <fcntl.h>
+#include <netdb.h>
 #include "SocketFunc.h"
 
 namespace panutils {
@@ -9,7 +14,7 @@ void signalHandler(int n_signal) {
 }
 
 int SocketInit() {
-	sigaction action;
+	struct sigaction action;
 	action.sa_handler = signalHandler;
 	sigemptyset(&action.sa_mask);
 	action.sa_flags = 0;
@@ -31,21 +36,25 @@ int CloseSocket(int fd) {
 int SetSocketNoBlocking(int fd, bool block) {
 	int opts;
 	int opt = 1;
-	iRet = setsockopt(socketId, SOL_SOCKET, SO_REUSEADDR, (const char*)&opt, sizeof opt);
+	auto iRet = setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, (const char*)&opt, sizeof opt);
+	
+	if (iRet<0){
+		return iRet;
+}	
 
-	opts = fcntl(socketId, F_GETFL, 0);
+	opts = fcntl(fd, F_GETFL, 0);
 	if (opts<0)
 	{
 		return opts;
 	}
 	if (block)
 	{
-		fcntl(sockfd, F_SETFL, opts&~O_NONBLOCK);
+		fcntl(fd, F_SETFL, opts&~O_NONBLOCK);
 	}
 	else {
 
 		opts |= O_NONBLOCK;
-		opts = fcntl(socketId, F_SETFL, opts);
+		opts = fcntl(fd, F_SETFL, opts);
 		if (opts<0)
 		{
 			return opts;
@@ -162,7 +171,7 @@ int SocketServerTCP(int port, int &fd) {
 		err = SocketError();
 		CloseSocket(fd);
 		fd = -1;
-		return;
+		return err;
 	}
 
 	err = SetSocketNoBlocking(fd, false);
