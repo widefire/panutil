@@ -2,6 +2,7 @@
 #include <signal.h>
 #include "SocketFunc.h"
 
+namespace panutils {
 
 void signalHandler(int n_signal) {
 
@@ -93,5 +94,104 @@ int SocketRecv(int fd, char *buf, int len, int &err, bool block) {
 	}
 
 	return result;
+}
+
+int SocketClientTCP(const char *hostname, int port) {
+
+	auto host = gethostbyname(hostname);
+	if (nullptr == host)
+	{
+		return -1;
+	}
+	for (int i = 0; nullptr != host->h_addr_list[i]; i++)
+	{
+		int fd;
+		sockaddr_in svrAddr;
+
+		memset(&svrAddr, 0, sizeof svrAddr);
+		svrAddr.sin_family = AF_INET;
+		svrAddr.sin_addr = *(in_addr*)host->h_addr_list[0];
+		svrAddr.sin_port = htons(port);
+
+		fd = socket(AF_INET, SOCK_STREAM, 0);
+		if (fd<0) {
+			return fd;
+		}
+
+		auto ret = connect(fd, (struct sockaddr *)&svrAddr, sizeof(svrAddr));
+		if (ret<0)
+		{
+			auto err = SocketError();
+			CloseSocket(fd);
+			continue;
+		}
+		else
+		{
+			return fd;
+		}
+
+	}
+
+
+	return -1;
+
+	}
+
+
+int SocketClientUDP() {
+	return socket(AF_INET, SOCK_DGRAM, 0);
+}
+
+
+int SocketServerTCP(int port, int &fd) {
+	auto err = 0;
+
+	char hostname[256];
+	gethostname(hostname, 256);
+	auto host = gethostbyname(hostname);
+
+	sockaddr_in addr;
+	memset(&addr, 0, sizeof(addr));
+	addr.sin_addr = *(in_addr*)host->h_addr_list[0];
+	addr.sin_family = AF_INET;
+	addr.sin_port = htons(port);
+
+	fd = socket(AF_INET, SOCK_STREAM, 0);
+	if (fd<0)
+	{
+		err = SocketError();
+		CloseSocket(fd);
+		fd = -1;
+		return;
+	}
+
+	err = SetSocketNoBlocking(fd, false);
+	if (err != 0)
+	{
+		CloseSocket(fd);
+		fd = -1;
+		return err;
+	}
+
+	err = bind(fd, ((const sockaddr*)&addr), sizeof(addr));
+	if (err != 0)
+	{
+		CloseSocket(fd);
+		fd = -1;
+		return err;
+	}
+
+	err = listen(fd, SOMAXCONN);
+	if (err != 0)
+	{
+		CloseSocket(fd);
+		fd = -1;
+		return err;
+	}
+
+	return err;
+}
+
+
 }
 #endif

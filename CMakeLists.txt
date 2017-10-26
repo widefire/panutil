@@ -16,9 +16,10 @@ aux_source_directory(. DIR_SRCS)
 #添加目录 
 add_subdirectory(panUtils/thread)
 add_subdirectory(panUtils/structs)
+add_subdirectory(panUtils/network)
 
 
 #指定生成目标
 add_executable(Demo ${DIR_SRCS})
 
-TARGET_LINK_LIBRARIES(Demo panutils_thread panutils_structs)
+TARGET_LINK_LIBRARIES(Demo panutils_thread panutils_structs panutils_network)

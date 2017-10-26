@@ -1,9 +1,11 @@
 #include "panUtils/thread/Locker.h"
 #include "panUtils/structs/RingBuffer.h"
+#include "panUtils/network/SocketFunc.h"
+#include "socketTest.h"
 
 int main(int argc, char **argv) {
-
-	RWLock rwl;
+	panutils::SocketInit();
+	panutils::RWLock rwl;
 	rwl.RLock();
 	rwl.RLock();
 	rwl.RUnlock();
@@ -11,7 +13,7 @@ int main(int argc, char **argv) {
 	rwl.Lock();
 	rwl.Unlock();
 
-	RingBuffer ring_buffer(20);
+	panutils::RingBuffer ring_buffer(20);
 
 	for (int i = 0; i < 5; i++)
 	{
@@ -23,5 +25,9 @@ int main(int argc, char **argv) {
 	ring_buffer.Ignore(1);
 	unsigned char dat[2];
 	ring_buffer.Read(dat, 2);
+
+	TestClient();
+
+	panutils::SocketShutdown();
 	return 1;
 }
