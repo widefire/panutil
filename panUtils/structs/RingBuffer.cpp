@@ -96,6 +96,7 @@ namespace panutils {
 		return size;
 	}
 
+
 	int RingBuffer::Write(unsigned char * data, int size)
 	{
 		std::lock_guard<std::mutex> guard(_mtx);

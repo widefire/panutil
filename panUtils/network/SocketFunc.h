@@ -1,5 +1,6 @@
 #pragma once
 
+#include <time.h>
 #ifdef _WIN32
 #include <winsock2.h>
 #pragma comment(lib,"ws2_32.lib")
@@ -13,6 +14,7 @@ namespace panutils {
 
 	const int E_SOCKET_ERROR = -1;
 #ifdef _WIN32
+	void	gettimeval(struct timeval *tp);
 	const int E_SOCKET_WOULDBLOCK = WSAEWOULDBLOCK;
 	const int E_SOCKET_INTR = WSAEINTR;
 	const int E_SOCKET_AGAIN = WSAEWOULDBLOCK;
@@ -23,6 +25,8 @@ namespace panutils {
 	const int E_SOCKET_AGAIN = EAGAIN;
 	const int E_SOCKET_INPROGRESS = EINPROGRESS;
 #endif
+
+	
 
 	int SocketInit();
 	int SocketShutdown();
@@ -39,4 +43,6 @@ namespace panutils {
 	int SocketClientUDP();
 
 	int SocketServerTCP(int port,int &fd);//return 0 succed
+
+	void SocketSetTimeout(int fd, timeval time,bool b_recv);
 }
