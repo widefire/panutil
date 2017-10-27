@@ -203,10 +203,10 @@ int SocketServerTCP(int port, int &fd) {
 
 void SocketSetTimeout(int fd, timeval time, bool b_recv) {
 	if (b_recv) {
-		setsockopt(s, SOL_SOCKET, SO_RCVTIMEO, (const char*)&time, sizeof(time));
+		setsockopt(fd, SOL_SOCKET, SO_RCVTIMEO, (const char*)&time, sizeof(time));
 	}
 	else {
-		setsockopt(s, SOL_SOCKET, SO_SNDTIMEO, (const char*)&time, sizeof(time));
+		setsockopt(fd, SOL_SOCKET, SO_SNDTIMEO, (const char*)&time, sizeof(time));
 	}
 	
 	}
