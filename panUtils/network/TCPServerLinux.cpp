@@ -158,11 +158,11 @@ namespace panutils {
 	int TCPServer::Stop()
 	{
 		_endEpoll = true;
+		CloseSocket(_fd);
+		close(_epfd);
 		if (_threadEpoll.joinable()) {
 			_threadEpoll.join();
 		}
-		CloseSocket(_fd);
-		close(_epfd);
 		_fd = -1;
 		//wait for thread loop end;
 		return 0;
