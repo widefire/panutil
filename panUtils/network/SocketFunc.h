@@ -8,6 +8,13 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <errno.h>
+#include <sys/epoll.h>
+#include <signal.h>
+#include <string.h>
+#include <netinet/in.h>
+#include <unistd.h>
+#include <fcntl.h>
+#include <netdb.h>
 #endif // _WIN32
 
 namespace panutils {
@@ -42,6 +49,9 @@ namespace panutils {
 	int SocketClientTCP(const char* hostname, int port);
 	int SocketClientUDP();
 
+	/*
+	create socket,bind and listen
+	*/
 	int SocketServerTCP(int port,int &fd);//return 0 succed
 
 	void SocketSetTimeout(int fd, timeval time,bool b_recv);

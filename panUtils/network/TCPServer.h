@@ -10,22 +10,30 @@ namespace panutils {
 	public:
 		TCPServer();
 		~TCPServer();
-		int Init(int port);
+		int Init(int port);//return 0 succeed
 		int Start();
 		int Stop();
 
 		virtual void OnNewConn(std::shared_ptr<TCPConn> conn);//notify new connect
-		virtual void OnData(std::shared_ptr<TCPConn> conn);//notify new data can read
-		virtual void OnErr(std::shared_ptr<TCPConn> conn, int err);//notify conn err
+		virtual void OnErr(std::shared_ptr<TCPConn> conn, int err);//notify conn err,closed
 	private:
-		void EnableWrite(int fd);
-		void NewFd(int fd, std::string addr, int port);//create conn,call onNewConn
-		void RecvData(int fd, unsigned char *data, int size);//write data to conn cache
-		void CloseFd(int fd);//close  and remove conn,call new fd
+		void EnableWrite(std::shared_ptr<TCPConn> conn);
+		void NewFd(std::shared_ptr<TCPConn> conn, std::string addr, int port);//create conn,call onNewConn
 	private:
+		struct ConnContainer
+		{
+			std::shared_ptr<TCPConn> conn;
+		};
 		int _port;
-		std::map<int, std::shared_ptr<TCPConn>> _conns; 
-		SpinLock _mtxConns;
+		int _fd;
+#ifdef _WIN32
+#else
+		int _epfd;
+		std::thread _threadEpoll;
+		void EpollLoop();
+		volatile _endEpoll;
+#endif // _WIN32
+
 	};
 
 }

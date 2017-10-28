@@ -157,6 +157,10 @@ namespace panutils {
 	}
 	int TCPConn::RealSendPtr()
 	{
+		/*
+		linux use socket send
+		windows use iocp
+		*/
 		while (_pSend != nullptr&&_cur_pSend<_size_pSend)
 		{
 			int err;

@@ -1,10 +1,4 @@
 #ifndef _WIN32
-#include <signal.h>
-#include <string.h>
-#include <netinet/in.h>
-#include <unistd.h>
-#include <fcntl.h>
-#include <netdb.h>
 #include "SocketFunc.h"
 
 namespace panutils {
