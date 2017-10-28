@@ -22,4 +22,5 @@ add_subdirectory(panUtils/network)
 #指定生成目标
 add_executable(Demo ${DIR_SRCS})
 
-TARGET_LINK_LIBRARIES(Demo panutils_thread panutils_structs panutils_network)
+#添加链接库
+TARGET_LINK_LIBRARIES(Demo  pthread panutils_thread panutils_structs panutils_network)

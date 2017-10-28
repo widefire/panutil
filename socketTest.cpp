@@ -20,7 +20,8 @@ void TestClient()
 		std::cout <<__LINE__<< err << std::endl;
 		return;
 	}
-
+	std::shared_ptr<int> p(new int(3));
+	std::shared_ptr<int> p2 = p;
 	err=svr.Start();
 	if (err != 0) {
 		std::cout <<__LINE__<< err << std::endl;
