@@ -52,7 +52,7 @@ namespace panutils {
 					/*
 					close connect
 					*/
-					auto ptr = (ConnContainer*)(events[i].ptr);
+					auto ptr = (ConnContainer*)(events[i].data.ptr);
 					if (ptr == nullptr) {
 						CloseSocket(events[i].data.fd);
 					}
@@ -72,7 +72,7 @@ namespace panutils {
 						int infd;
 						char hbuf[NI_MAXHOST], sbuf[NI_MAXSERV];
 						addrLen = sizeof inAddr;
-						infd = accept(eventManager->serverSocket, &inAddr, &addrLen);
+						infd = accept(_fd, &inAddr, &addrLen);
 						if (infd < 0) {
 							break;
 						}
@@ -84,7 +84,8 @@ namespace panutils {
 						ev.data.fd = infd;
 						ev.events = EPOLLET | EPOLLIN | EPOLLOUT;
 						auto ptr = new ConnContainer();
-						ptr->conn = new TCPConn(infd);
+						std::shared_ptr<TCPConn> tmpConn(new TCPConn(infd));
+						ptr->conn = tmpConn;
 						conn->SetRemoteAddr(hbuf);
 						conn->Setport(atoi(sbuf));
 						ev.data.ptr = ptr;
