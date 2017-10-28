@@ -86,11 +86,11 @@ namespace panutils {
 						auto ptr = new ConnContainer();
 						std::shared_ptr<TCPConn> tmpConn(new TCPConn(infd));
 						ptr->conn = tmpConn;
-						conn->SetRemoteAddr(hbuf);
-						conn->Setport(atoi(sbuf));
+						ptr->conn->SetRemoteAddr(hbuf);
+						ptr->conn->Setport(atoi(sbuf));
 						ev.data.ptr = ptr;
 						this->OnNewConn(ptr->conn);
-						epoll_ctl(_eppfd, EPOLL_CTL_ADD, infd, &ev);
+						epoll_ctl(_epfd, EPOLL_CTL_ADD, infd, &ev);
 						break;
 					}
 				}
@@ -102,9 +102,9 @@ namespace panutils {
 					auto errcode = 0,ret=0;
 					bool closed = false;
 					while (true) {
-						ret = SocketRecv(events[i].data.fd, recvBuf, EPOLL_RECV_SIZE, err);
+						ret = SocketRecv(events[i].data.fd, recvBuf, EPOLL_RECV_SIZE, errcode);
 						if (ret > 0) {
-							buf.Wirte(recvBuf, ret);
+							buf.Write(recvBuf, ret);
 						}
 						else if (ret == 0) {
 							closed = true;
@@ -115,7 +115,7 @@ namespace panutils {
 						}
 					}
 					if (buf.CanRead() > 0) {
-						auto ptr = (ConnContainer*)(events[i].ptr);
+						auto ptr = (ConnContainer*)(events[i].data.ptr);
 						if (nullptr != ptr) {
 							auto size = buf.CanRead();
 							auto data = buf.Read(size, size);
@@ -123,7 +123,7 @@ namespace panutils {
 						}
 					}
 					if (closed) {
-						auto ptr = (ConnContainer*)(events[i].ptr);
+						auto ptr = (ConnContainer*)(events[i].data.ptr);
 						if (ptr == nullptr) {
 							CloseSocket(events[i].data.fd);
 						}
@@ -139,7 +139,7 @@ namespace panutils {
 					/*
 					write able
 					*/
-					auto ptr = (ConnContainer*)(events[i].ptr);
+					auto ptr = (ConnContainer*)(events[i].data.ptr);
 					if (ptr != nullptr) {
 						ptr->conn->EnableWrite(true);
 					}
