@@ -1,5 +1,6 @@
 #include "socketTest.h"
 #include "panUtils/network/SocketFunc.h"
+#include "panUtils/network/TCPServer.h"
 #include <iostream>
 
 void TestClient()
@@ -13,4 +14,17 @@ void TestClient()
 	int ret=panutils::SocketSend(fd, buf, 8,err);
 	ret = panutils::SocketRecv(fd, cache, 20, err);
 	std::cout << cache<<buf << std::endl;
+	panutils::TCPServer svr;
+	err=svr.Init(8080);
+	if (err != 0) {
+		std::cout <<__LINE__<< err << std::endl;
+		return;
+	}
+
+	err=svr.Start();
+	if (err != 0) {
+		std::cout <<__LINE__<< err << std::endl;
+		return;
+	}
+	std::cin >> err;
 }
