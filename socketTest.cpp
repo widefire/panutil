@@ -27,5 +27,7 @@ void TestClient()
 		std::cout <<__LINE__<< err << std::endl;
 		return;
 	}
+	svr.Stop();
+	std::cout << __LINE__ << " stoped" << std::endl;
 	std::cin >> err;
 }
