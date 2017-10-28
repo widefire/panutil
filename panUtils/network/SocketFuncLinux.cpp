@@ -72,7 +72,17 @@ int SocketSend(int fd, const char *buf, int len, int &err, bool block) {
 		}
 	}
 	else {
-		while ((result = send(fd, buf, len, MSG_NOSIGNAL)) < 0 && E_SOCKET_INTR == (err = SocketError()));
+		//while ((result = send(fd, buf, len, MSG_NOSIGNAL)) < 0 && E_SOCKET_INTR == (err = SocketError()));
+		result = send(fd, buf, len, MSG_NOSIGNAL);
+		if (result<0)
+		{
+			err = SocketError();
+			if ((err == E_SOCKET_WOULDBLOCK ||
+				err == E_SOCKET_INTR || err == E_SOCKET_AGAIN ||
+				err == E_SOCKET_INPROGRESS)) {
+				err = E_SOCKET_AGAIN;
+			}
+		}
 	}
 
 	return result;
@@ -93,7 +103,17 @@ int SocketRecv(int fd, char *buf, int len, int &err, bool block) {
 		}
 	}
 	else {
-		while ((result = recv(fd, buf, len, 0)) < 0 && E_SOCKET_INTR == (err = SocketError()));
+		//while ((result = recv(fd, buf, len, 0)) < 0 && E_SOCKET_INTR == (err = SocketError()));
+		result = recv(fd, buf, len, 0);
+		if (result<0)
+		{
+			err = SocketError();
+			if ((err == E_SOCKET_WOULDBLOCK ||
+				err == E_SOCKET_INTR || err == E_SOCKET_AGAIN ||
+				err == E_SOCKET_INPROGRESS)) {
+				err = E_SOCKET_AGAIN;
+			}
+		}
 	}
 
 	return result;

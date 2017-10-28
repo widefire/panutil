@@ -106,6 +106,12 @@ namespace panutils {
 						if (ret > 0) {
 							buf.Write(recvBuf, ret);
 						}
+						else if (ret < 0 && (errcode == E_SOCKET_WOULDBLOCK ||
+							errcode == E_SOCKET_INTR || errcode == E_SOCKET_AGAIN ||
+							errcode == E_SOCKET_INPROGRESS))
+						{
+							break;
+						}
 						else if (ret == 0) {
 							closed = true;
 							break;
@@ -120,6 +126,7 @@ namespace panutils {
 							auto size = buf.CanRead();
 							auto data = buf.Read(size, size);
 							ptr->conn->Recved(data, size);
+							delete[]data;
 						}
 					}
 					if (closed) {
