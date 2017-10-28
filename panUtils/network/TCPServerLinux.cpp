@@ -39,9 +39,9 @@ namespace panutils {
 		struct epoll_event events[EPOLL_MAX_EVENT];
 		struct epoll_event ev;
 		char recvBuf[EPOLL_RECV_SIZE];
-
+		printf("begin loop");
 		while (_endEpoll == false) {
-			nfds = epoll_wait(_epfd, events, EPOLL_MAX_EVENT, -1);
+			nfds = epoll_wait(_epfd, events, EPOLL_MAX_EVENT, 10000);
 			/*
 			监听的skocket只需要EpollIn就足够了，EpollErr和EpollHup会自动加上
 			*/
