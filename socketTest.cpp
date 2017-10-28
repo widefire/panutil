@@ -20,6 +20,7 @@ void TestClient()
 		std::cout <<__LINE__<< err << std::endl;
 		return;
 	}
+	std::cout << __LINE__ << std::endl;
 	std::shared_ptr<int> p(new int(3));
 	std::shared_ptr<int> p2 = p;
 	err=svr.Start();
@@ -27,6 +28,7 @@ void TestClient()
 		std::cout <<__LINE__<< err << std::endl;
 		return;
 	}
+	std::cout << __LINE__ << std::endl;
 	svr.Stop();
 	std::cout << __LINE__ << " stoped" << std::endl;
 	std::cin >> err;
