@@ -3,6 +3,7 @@
 #include "../thread/Locker.h"
 #include <map>
 #include <list>
+#include <thread>
 
 namespace panutils {
 	class TCPServer
@@ -31,7 +32,7 @@ namespace panutils {
 		int _epfd;
 		std::thread _threadEpoll;
 		void EpollLoop();
-		volatile _endEpoll;
+		volatile bool _endEpoll;
 #endif // _WIN32
 
 	};
