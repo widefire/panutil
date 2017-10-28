@@ -104,7 +104,7 @@ namespace panutils {
 					while (true) {
 						ret = SocketRecv(events[i].data.fd, recvBuf, EPOLL_RECV_SIZE, errcode);
 						if (ret > 0) {
-							buf.Write(recvBuf, ret);
+							buf.Write((unsigned char*)recvBuf, ret);
 						}
 						else if (ret < 0 && (errcode == E_SOCKET_WOULDBLOCK ||
 							errcode == E_SOCKET_INTR || errcode == E_SOCKET_AGAIN ||
