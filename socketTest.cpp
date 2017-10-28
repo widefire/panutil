@@ -29,7 +29,7 @@ void TestClient()
 		return;
 	}
 	std::cout << __LINE__ << std::endl;
-	//svr.Stop();
+	svr.Stop();
 	std::cout << __LINE__ << " stoped" << std::endl;
 	std::cin >> err;
 }

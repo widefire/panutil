@@ -1,6 +1,7 @@
 
 #include "TCPServer.h"
 #include "SocketFunc.h"
+#include <iostream>
 
 namespace panutils {
 
@@ -24,7 +25,7 @@ namespace panutils {
 		if (-1 == ret) {
 			return -1;
 		}
-
+		std::cout << __FILE__ << __LINE__ << " begin loop" << std::endl;
 		std::thread loopThread(std::mem_fun(&TCPServer::EpollLoop), this);
 		_threadEpoll = std::move(loopThread);
 
@@ -39,9 +40,13 @@ namespace panutils {
 		struct epoll_event events[EPOLL_MAX_EVENT];
 		struct epoll_event ev;
 		char recvBuf[EPOLL_RECV_SIZE];
-		printf("begin loop");
+		std::cout << __FILE__ << __LINE__ << "begin while" << std::endl;
 		while (_endEpoll == false) {
-			nfds = epoll_wait(_epfd, events, EPOLL_MAX_EVENT, 10000);
+			nfds = epoll_wait(_epfd, events, EPOLL_MAX_EVENT, -1);
+			if (_endEpoll)
+			{
+				break;
+			}
 			/*
 			监听的skocket只需要EpollIn就足够了，EpollErr和EpollHup会自动加上
 			*/
