@@ -42,7 +42,7 @@ namespace panutils {
 		char recvBuf[EPOLL_RECV_SIZE];
 		std::cout << __FILE__ << __LINE__ << "begin while" << std::endl;
 		while (_endEpoll == false) {
-			nfds = epoll_wait(_epfd, events, EPOLL_MAX_EVENT, -1);
+			nfds = epoll_wait(_epfd, events, EPOLL_MAX_EVENT, 1000);
 			if (_endEpoll)
 			{
 				break;
