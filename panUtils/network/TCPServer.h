@@ -4,6 +4,7 @@
 #include <map>
 #include <list>
 #include <thread>
+#include <vector>
 
 namespace panutils {
 	class TCPServer
@@ -18,15 +19,18 @@ namespace panutils {
 		virtual void OnNewConn(std::shared_ptr<TCPConn> conn);//notify new connect
 		virtual void OnErr(std::shared_ptr<TCPConn> conn, int err);//notify conn err,closed
 	private:
-		void EnableWrite(std::shared_ptr<TCPConn> conn);
-		void NewFd(std::shared_ptr<TCPConn> conn, std::string addr, int port);//create conn,call onNewConn
+
+		void EnableWrite(int fd);
+		void NewFd(int fd, std::string addr, int port);//create conn,call onNewConn
+		void CloseFd(int fd);
+		void NewData(int fd, unsigned char *data, int size);
 	private:
-		struct ConnContainer
-		{
-			std::shared_ptr<TCPConn> conn;
-		};
+		
 		int _port;
 		int _fd;
+		std::vector<std::map<int,std::shared_ptr<TCPConn>>> _vecConnPtr;
+		std::vector<std::shared_ptr<RWLock>> _vecConnMtx;
+		int _numThread;//for windows ,mul thread . for linux less lock conflict
 #ifdef _WIN32
 #else
 		int _epfd;
@@ -34,7 +38,7 @@ namespace panutils {
 		void EpollLoop();
 		volatile bool _endEpoll;
 #endif // _WIN32
-
+		
 	};
 
 }
