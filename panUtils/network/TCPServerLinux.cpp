@@ -14,17 +14,7 @@ namespace panutils {
 		iocp use thread and task list
 		epoll not
 		*/
-		_epfd = epoll_create1(0);
-		if (-1 == _epfd) {
-			return -1;
-		}
-		epoll_event ev;
-		ev.data.fd = _fd;
-		ev.events = EPOLLIN | EPOLLET;
-		auto ret = epoll_ctl(_epfd, EPOLL_CTL_ADD, _fd, &ev);
-		if (-1 == ret) {
-			return -1;
-		}
+		
 		std::cout << __FILE__ << __LINE__ << " begin loop" << std::endl;
 		std::thread loopThread(std::mem_fun(&TCPServer::EpollLoop), this);
 		_threadEpoll = std::move(loopThread);
@@ -33,12 +23,23 @@ namespace panutils {
 	}
 
 	void TCPServer::EpollLoop() {
-		_endEpoll = false;
-		int nfds;
+		_epfd = epoll_create1(0);
+		if (-1 == _epfd) {
+			return -1;
+		}
+
 		const int EPOLL_MAX_EVENT = 128;
 		const int EPOLL_RECV_SIZE = 2048;
 		struct epoll_event events[EPOLL_MAX_EVENT];
-		struct epoll_event ev;
+		epoll_event ev;
+		ev.data.fd = _fd;
+		ev.events = EPOLLIN | EPOLLET;
+		auto ret = epoll_ctl(_epfd, EPOLL_CTL_ADD, _fd, &ev);
+		if (-1 == ret) {
+			return -1;
+		}
+		_endEpoll = false;
+		int nfds;
 		char recvBuf[EPOLL_RECV_SIZE];
 		std::cout << __FILE__ << __LINE__ << "begin while" << std::endl;
 		while (_endEpoll == false) {
