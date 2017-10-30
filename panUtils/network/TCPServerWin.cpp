@@ -19,7 +19,6 @@ namespace panutils {
 	{
 		CloseSocket(_fd);
 		_fd = -1;
-		//wait for thread loop end;
 		return 0;
 	}
 
