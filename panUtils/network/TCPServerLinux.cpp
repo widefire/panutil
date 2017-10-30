@@ -82,7 +82,7 @@ namespace panutils {
 						ev.data.fd = infd;
 						ev.events = EPOLLET | EPOLLIN | EPOLLOUT;
 						epoll_ctl(_epfd, EPOLL_CTL_ADD, infd, &ev);
-						NewFd(fd);
+						NewFd(infd);
 						break;
 					}
 				}
@@ -94,7 +94,7 @@ namespace panutils {
 					while (true) {
 						ret = SocketRecv(events[i].data.fd, recvBuf, EPOLL_RECV_SIZE, errcode);
 						if (ret > 0) {
-							NewData(events[i].data.fd, recvBuf, ret);
+							NewData(events[i].data.fd, (unsigned char*)recvBuf, ret);
 						}
 						else if (ret < 0 && (errcode == E_SOCKET_WOULDBLOCK ||
 							errcode == E_SOCKET_INTR || errcode == E_SOCKET_AGAIN ||
