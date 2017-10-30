@@ -57,14 +57,7 @@ namespace panutils {
 					/*
 					close connect
 					*/
-					auto ptr = (ConnContainer*)(events[i].data.ptr);
-					if (ptr == nullptr) {
-						CloseSocket(events[i].data.fd);
-					}
-					else {
-						ptr->conn->Close();
-						delete ptr;
-					}
+					CloseFd(events[i].data.fd);
 					epoll_ctl(_epfd, EPOLL_CTL_DEL, events[i].data.fd, 0);
 				}
 				else if(events[i].data.fd==_fd){
@@ -88,14 +81,8 @@ namespace panutils {
 						SetSocketNoBlocking(infd, false);
 						ev.data.fd = infd;
 						ev.events = EPOLLET | EPOLLIN | EPOLLOUT;
-						auto ptr = new ConnContainer();
-						std::shared_ptr<TCPConn> tmpConn(new TCPConn(infd));
-						ptr->conn = tmpConn;
-						ptr->conn->SetRemoteAddr(hbuf);
-						ptr->conn->Setport(atoi(sbuf));
-						ev.data.ptr = ptr;
-						this->OnNewConn(ptr->conn);
 						epoll_ctl(_epfd, EPOLL_CTL_ADD, infd, &ev);
+						NewFd(fd);
 						break;
 					}
 				}
@@ -103,13 +90,11 @@ namespace panutils {
 					/*
 					read data or close connect
 					*/
-					RingBuffer buf(0xfffffff);
 					auto errcode = 0,ret=0;
-					bool closed = false;
 					while (true) {
 						ret = SocketRecv(events[i].data.fd, recvBuf, EPOLL_RECV_SIZE, errcode);
 						if (ret > 0) {
-							buf.Write((unsigned char*)recvBuf, ret);
+							NewData(events[i].data.fd, recvBuf, ret);
 						}
 						else if (ret < 0 && (errcode == E_SOCKET_WOULDBLOCK ||
 							errcode == E_SOCKET_INTR || errcode == E_SOCKET_AGAIN ||
@@ -117,44 +102,17 @@ namespace panutils {
 						{
 							break;
 						}
-						else if (ret == 0) {
-							closed = true;
+						else  {
+							CloseFd(events[i].data.fd);
+							epoll_ctl(_epfd, EPOLL_CTL_DEL, events[i].data.fd, 0);
 							break;
 						}
-						else {
-							break;
-						}
 					}
-					if (buf.CanRead() > 0) {
-						auto ptr = (ConnContainer*)(events[i].data.ptr);
-						if (nullptr != ptr) {
-							auto size = buf.CanRead();
-							auto data = buf.Read(size, size);
-							ptr->conn->Recved(data, size);
-							delete[]data;
-						}
-					}
-					if (closed) {
-						auto ptr = (ConnContainer*)(events[i].data.ptr);
-						if (ptr == nullptr) {
-							CloseSocket(events[i].data.fd);
-						}
-						else {
-							ptr->conn->Close();
-							delete ptr;
-						}
-						epoll_ctl(_epfd, EPOLL_CTL_DEL, events[i].data.fd, 0);
-					}
+					
 
 				}
 				else if (events[i].events&EPOLLOUT) {
-					/*
-					write able
-					*/
-					auto ptr = (ConnContainer*)(events[i].data.ptr);
-					if (ptr != nullptr) {
-						ptr->conn->EnableWrite(true);
-					}
+					EnableWrite(events[i].data.fd);
 				}
 			}
 		}
@@ -171,6 +129,45 @@ namespace panutils {
 		_fd = -1;
 		//wait for thread loop end;
 		return 0;
+	}
+
+	void TCPServer::EnableWrite(int fd)
+	{
+		auto it = _mapConn.find(fd);
+		if (it != _mapConn.end()) {
+			it->second->EnableWrite(true);
+		}
+	}
+
+	void TCPServer::NewFd(int fd, std::string addr, int port)
+	{
+		std::shared_ptr<TCPConn> conn(new TCPConn(fd));
+		auto it = _mapConn.find(fd);
+		if (it != _mapConn.end())
+		{
+			it->second->Close();
+		}
+		_mapConn[fd] = conn;
+		/*
+		notify
+		*/
+		OnNewConn(conn);
+	}
+
+	void TCPServer::CloseFd(int fd) {
+		auto it = _mapConn.find(fd);
+		if (it != _mapConn.end())
+		{
+			it->second->Close();
+			_mapConn.erase(it);
+		}
+	}
+	void TCPServer::NewData(int fd, unsigned char *data, int size) {
+		auto it = _mapConn.find(fd);
+		if (it != _mapConn.end())
+		{
+			it->second->Recved(data, size);
+		}
 	}
 #endif // !_WIN32
 

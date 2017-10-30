@@ -35,22 +35,25 @@ namespace panutils {
 		//do nothing here
 	}
 
-	void TCPServer::EnableWrite(std::shared_ptr<TCPConn> conn)
-	{
-		conn->EnableWrite(true);
-	}
-
-	void TCPServer::NewFd(std::shared_ptr<TCPConn> conn, std::string addr, int port)
+	void TCPServer::EnableWrite(int fd)
 	{
 		
-		conn->SetRemoteAddr(addr);
-		conn->Setport(port);
+	}
+
+	void TCPServer::NewFd(int fd, std::string addr, int port)
+	{
 		/*
 		notify
 		*/
-		OnNewConn(conn);
+		//OnNewConn(conn);
 	}
 
+	void TCPServer::CloseFd(int fd) {
+
+	}
+	void TCPServer::NewData(int fd, unsigned char *data, int size) {
+
+	}
 
 
 

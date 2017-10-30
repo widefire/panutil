@@ -22,6 +22,26 @@ namespace panutils {
 		//wait for thread loop end;
 		return 0;
 	}
+
+	void TCPServer::EnableWrite(int fd)
+	{
+
+	}
+
+	void TCPServer::NewFd(int fd, std::string addr, int port)
+	{
+		/*
+		notify
+		*/
+		//OnNewConn(conn);
+	}
+
+	void TCPServer::CloseFd(int fd) {
+
+	}
+	void TCPServer::NewData(int fd, unsigned char *data, int size) {
+
+	}
 #endif
 
 }

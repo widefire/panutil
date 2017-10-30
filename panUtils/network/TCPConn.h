@@ -22,7 +22,7 @@ namespace panutils {
 		/*
 		append data to recv cache
 		*/
-		int Recved(unsigned char *data, int size);
+		virtual int Recved(unsigned char *data, int size);
 		/*
 		close socket
 		*/

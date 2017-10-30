@@ -18,6 +18,7 @@ namespace panutils {
 
 		virtual void OnNewConn(std::shared_ptr<TCPConn> conn);//notify new connect
 		virtual void OnErr(std::shared_ptr<TCPConn> conn, int err);//notify conn err,closed
+		
 	private:
 
 		void EnableWrite(int fd);
@@ -28,11 +29,13 @@ namespace panutils {
 		
 		int _port;
 		int _fd;
+		
+#ifdef _WIN32
 		std::vector<std::map<int,std::shared_ptr<TCPConn>>> _vecConnPtr;
 		std::vector<std::shared_ptr<RWLock>> _vecConnMtx;
-		int _numThread;//for windows ,mul thread . for linux less lock conflict
-#ifdef _WIN32
+		int _numThread;//for windows ,mul thread .
 #else
+		std::map<int, std::shared_ptr<TCPConn>> _mapConn;//epoll onethread ,not need mutex
 		int _epfd;
 		std::thread _threadEpoll;
 		void EpollLoop();
