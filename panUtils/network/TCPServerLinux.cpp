@@ -51,7 +51,11 @@ namespace panutils {
 			/*
 			监听的skocket只需要EpollIn就足够了，EpollErr和EpollHup会自动加上
 			*/
-			std::cout << __LINE__ << " nfds " << nfds<<std::endl;
+			if (nfds == -1) {
+
+				std::cout << __LINE__ << " nfds " << nfds << std::endl;
+				std::cout << SocketError << std::endl;
+			}
 			for (int i = 0; i < nfds; i++) {
 				std::cout << __LINE__ << " event " << events[i].events << std::endl;
 				if ((events[i].events&EPOLLERR) ||
