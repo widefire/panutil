@@ -45,12 +45,13 @@ namespace panutils {
 			nfds = epoll_wait(_epfd, events, EPOLL_MAX_EVENT, -1);
 			if (_endEpoll)
 			{
+				std::cout << __LINE__ << "end loop" << std::endl;
 				break;
 			}
-			std::cout << __FILE__ << __LINE__ << _endEpoll << std::endl;
 			/*
 			监听的skocket只需要EpollIn就足够了，EpollErr和EpollHup会自动加上
 			*/
+			std::cout << __LINE__ << " nfds" << std::endl;
 			for (int i = 0; i < nfds; i++) {
 				
 				if ((events[i].events&EPOLLERR) ||
@@ -58,10 +59,12 @@ namespace panutils {
 					/*
 					close connect
 					*/
+					std::cout << __LINE__ << "err " << events[i].data.fd << std::endl;
 					CloseFd(events[i].data.fd);
 					epoll_ctl(_epfd, EPOLL_CTL_DEL, events[i].data.fd, 0);
 				}
 				else if(events[i].data.fd==_fd){
+					std::cout << __LINE__ << "new conn" << std::endl;
 					/*
 					new connect
 					*/
@@ -91,6 +94,7 @@ namespace panutils {
 					/*
 					read data or close connect
 					*/
+					std::cout << __LINE__ << " in" << events[i].data.fd << std::endl;
 					auto errcode = 0,ret=0;
 					while (true) {
 						ret = SocketRecv(events[i].data.fd, recvBuf, EPOLL_RECV_SIZE, errcode);
@@ -113,6 +117,7 @@ namespace panutils {
 
 				}
 				else if (events[i].events&EPOLLOUT) {
+					std::cout << __LINE__ << " out" << std::endl;
 					EnableWrite(events[i].data.fd);
 				}
 			}
