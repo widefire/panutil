@@ -82,7 +82,7 @@ namespace panutils {
 						ev.data.fd = infd;
 						ev.events = EPOLLET | EPOLLIN | EPOLLOUT;
 						epoll_ctl(_epfd, EPOLL_CTL_ADD, infd, &ev);
-						NewFd(infd);
+						NewFd(infd,hbuf,atoi(sbuf));
 						break;
 					}
 				}
