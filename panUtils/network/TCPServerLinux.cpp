@@ -54,7 +54,8 @@ namespace panutils {
 			if (nfds == -1) {
 
 				std::cout << __LINE__ << " nfds " << nfds << std::endl;
-				std::cout << SocketError << std::endl;
+				std::cout << SocketError() << std::endl;
+				break;
 			}
 			for (int i = 0; i < nfds; i++) {
 				std::cout << __LINE__ << " event " << events[i].events << std::endl;
