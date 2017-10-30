@@ -35,26 +35,4 @@ namespace panutils {
 		//do nothing here
 	}
 
-	void TCPServer::EnableWrite(int fd)
-	{
-		
-	}
-
-	void TCPServer::NewFd(int fd, std::string addr, int port)
-	{
-		/*
-		notify
-		*/
-		//OnNewConn(conn);
-	}
-
-	void TCPServer::CloseFd(int fd) {
-
-	}
-	void TCPServer::NewData(int fd, unsigned char *data, int size) {
-
-	}
-
-
-
 }
