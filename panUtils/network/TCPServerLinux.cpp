@@ -25,7 +25,7 @@ namespace panutils {
 	void TCPServer::EpollLoop() {
 		_epfd = epoll_create1(0);
 		if (-1 == _epfd) {
-			return -1;
+			return ;
 		}
 
 		const int EPOLL_MAX_EVENT = 128;
@@ -36,7 +36,7 @@ namespace panutils {
 		ev.events = EPOLLIN | EPOLLET;
 		auto ret = epoll_ctl(_epfd, EPOLL_CTL_ADD, _fd, &ev);
 		if (-1 == ret) {
-			return -1;
+			return ;
 		}
 		_endEpoll = false;
 		int nfds;
