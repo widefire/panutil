@@ -47,6 +47,7 @@ namespace panutils {
 			{
 				break;
 			}
+			std::cout << __FILE__ << __LINE__ << _endEpoll << std::endl;
 			/*
 			监听的skocket只需要EpollIn就足够了，EpollErr和EpollHup会自动加上
 			*/
