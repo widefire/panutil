@@ -176,7 +176,7 @@ int SocketServerTCP(int port, int &fd) {
 
 	sockaddr_in addr;
 	memset(&addr, 0, sizeof(addr));
-	addr.sin_addr = *(in_addr*)host->h_addr_list[0];
+	addr.sin_addr.s_addr = htons(INADDR_ANY);
 	addr.sin_family = AF_INET;
 	addr.sin_port = htons(port);
 
