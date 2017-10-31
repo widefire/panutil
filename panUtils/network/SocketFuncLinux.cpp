@@ -168,10 +168,11 @@ int SocketClientUDP() {
 
 int SocketServerTCP(int port, int &fd) {
 	auto err = 0;
-
-	char hostname[256];
+	
+	const char *host_name = "localhost";
+	/*char hostname[256];
 	gethostname(hostname, 256);
-	auto host = gethostbyname(hostname);
+	auto host = gethostbyname(hostname);*/
 
 	sockaddr_in addr;
 	memset(&addr, 0, sizeof(addr));
