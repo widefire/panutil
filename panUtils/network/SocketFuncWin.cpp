@@ -164,16 +164,26 @@ namespace panutils {
 		return socket(AF_INET, SOCK_DGRAM, 0);
 	}
 
+	int SocketBufSize(int fd, bool bsend) {
+		int bufSize;
+		int sizeSize = sizeof(bufSize);
+		auto opt = bsend ? SO_SNDBUF : SO_RCVBUF;
+		getsockopt(fd, SOL_SOCKET, SO_RCVBUF, (char*)&bufSize, &sizeSize);
+
+		if (bufSize<1500)
+		{
+			bufSize = 1500;
+		}
+
+		return bufSize;
+	}
+
 	int SocketServerTCP(int port, int &fd) {
 		auto err = 0;
 
-		char hostname[256];
-		gethostname(hostname, 256);
-		auto host = gethostbyname(hostname);
-
 		sockaddr_in addr;
 		memset(&addr, 0, sizeof(addr));
-		addr.sin_addr = *(in_addr*)host->h_addr_list[0];
+		addr.sin_addr.s_addr = htons(INADDR_ANY);
 		addr.sin_family = AF_INET;
 		addr.sin_port = htons(port);
 

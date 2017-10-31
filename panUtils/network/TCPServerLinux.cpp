@@ -174,6 +174,9 @@ namespace panutils {
 			it->second->Close();
 			_mapConn.erase(it);
 		}
+		else {
+			SocketClose(fd);
+		}
 	}
 	void TCPServer::NewData(int fd, unsigned char *data, int size) {
 		auto it = _mapConn.find(fd);

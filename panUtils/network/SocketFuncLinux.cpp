@@ -165,15 +165,21 @@ int SocketClientUDP() {
 	return socket(AF_INET, SOCK_DGRAM, 0);
 }
 
+int SocketBufSize(int fd, bool bsend) {
+	int bufSize;
+	int sizeSize = sizeof(bufSize);
+	auto opt = bsend ? SO_SNDBUF : SO_RCVBUF;
+	getsockopt(fd, SOL_SOCKET, SO_RCVBUF, (char*)&bufSize, &sizeSize);
+	if (bufSize<1500)
+	{
+		bufSize = 1500;
+	}
+	return bufSize;
+}
 
 int SocketServerTCP(int port, int &fd) {
 	auto err = 0;
 	
-	const char *host_name = "localhost";
-	/*char hostname[256];
-	gethostname(hostname, 256);
-	auto host = gethostbyname(hostname);*/
-
 	sockaddr_in addr;
 	memset(&addr, 0, sizeof(addr));
 	addr.sin_addr.s_addr = htons(INADDR_ANY);

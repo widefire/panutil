@@ -48,6 +48,7 @@ namespace panutils {
 
 	int SocketClientTCP(const char* hostname, int port);
 	int SocketClientUDP();
+	int SocketBufSize(int fd, bool bsend);
 
 	/*
 	create socket,bind and listen
