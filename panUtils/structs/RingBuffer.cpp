@@ -29,12 +29,7 @@ namespace panutils {
 			return 0;
 		}
 
-		if (_head <= _tail)
-		{
-			return _tail - _head;
-		}
-
-		return _size + _tail - _head;
+		return _tail - _head;
 	}
 
 	unsigned char* RingBuffer::Read(int size, int &readed)
@@ -44,12 +39,9 @@ namespace panutils {
 		if (size <= 0)
 		{
 			readed = 0;
-			return 0;
+			return nullptr;
 		}
-		if (size > CalCanRead())
-		{
-			size = CalCanRead();
-		}
+		size = size < CalCanRead() ? size : CalCanRead();
 
 		auto data_out = new	unsigned char[size];
 		if (nullptr == data_out)
@@ -58,15 +50,8 @@ namespace panutils {
 			return nullptr;
 		}
 
-		for (int i = 0; i < size; i++)
-		{
-			data_out[i] = _data[_head++];
-			if (_head == _size)
-			{
-				_head = 0;
-			}
-		}
-
+		memmove(data_out, _data + _head, size);
+		_head += size;
 		readed = size;
 
 		return data_out;
@@ -74,27 +59,35 @@ namespace panutils {
 
 	int RingBuffer::Read(unsigned char * data, int size)
 	{
+		if (nullptr==data||0>=size)
+		{
+			return -1;
+		}
 		std::lock_guard<std::mutex> guard(_mtx);
-		if (size <= 0 || nullptr == data)
+		size= size < CalCanRead() ? size : CalCanRead();
+		if (size<=0)
 		{
-			return 0;
+			return -1;
 		}
 
-		if (size > CalCanRead())
-		{
-			size = CalCanRead();
-		}
+		memcpy(data, _data, size);
+		_head += size;
 
-		for (int i = 0; i < size; i++)
-		{
-			data[i] = _data[_head++];
-			if (_head == _size)
-			{
-				_head = 0;
-			}
-		}
 		return size;
 	}
+
+	unsigned char * RingBuffer::GetPtr(int size, int & size_data)
+	{
+		std::lock_guard<std::mutex> guard(_mtx);
+		size_data = size < CalCanRead() ? size : CalCanRead();
+		if (size_data<=0)
+		{
+			return nullptr;
+		}
+		return _data + _head;
+	}
+
+	
 
 
 	int RingBuffer::Write(unsigned char * data, int size)
@@ -107,17 +100,18 @@ namespace panutils {
 
 		while (size > CalCanWrite())
 		{
-			ApplyNewDataSpace();
-		}
-
-		for (int i = 0; i < size; i++)
-		{
-			_data[_tail++] = data[i];
-			if (_tail == _size)
-			{
-				_tail = 0;
+			if (ApplyNewDataSpace() < 0) {
+				return -1;
 			}
 		}
+		if (size+_tail>=_size)
+		{
+			MoveDataToHead();
+		}
+
+		memcpy(_data + _tail, data, size);
+		_tail += size;
+
 
 		return size;
 	}
@@ -133,14 +127,7 @@ namespace panutils {
 		{
 			size = CalCanRead();
 		}
-		for (int i = 0; i < size; i++)
-		{
-			_head++;
-			if (_head == _size)
-			{
-				_head = 0;
-			}
-		}
+		_head += size;
 		return size;
 	}
 
@@ -181,14 +168,8 @@ namespace panutils {
 			auto can_read = CalCanRead();
 			if (can_read > 0)
 			{
-				for (int i = 0; i < can_read; i++)
-				{
-					pData[i] = _data[_head++];
-					if (_head == _size)
-					{
-						_head = 0;
-					}
-				}
+				MoveDataToHead();
+				memcpy(pData, _data, can_read);
 			}
 			_head = 0;
 			_tail = can_read;
@@ -204,8 +185,6 @@ namespace panutils {
 		_data = pData;
 		_size = newSize;
 
-
-		_size = newSize;
 		return newSize;
 	}
 
@@ -226,12 +205,17 @@ namespace panutils {
 			return 0;
 		}
 
-		if (_head <= _tail)
-		{
-			return _tail - _head;
-		}
+		return _tail - _head;
+	}
 
-		return _size + _tail - _head;
+	void RingBuffer::MoveDataToHead()
+	{
+		if (_head!=_tail&&_data!=nullptr)
+		{
+			memmove(_data, _data + _head, _tail - _head);
+			_tail -= _head;
+			_head = 0;
+		}
 	}
 
 }

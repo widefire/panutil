@@ -23,4 +23,8 @@ add_subdirectory(panUtils/network)
 add_executable(Demo ${DIR_SRCS})
 
 #添加链接库
+IF (CMAKE_SYSTEM_NAME MATCHES "Linux") 
 TARGET_LINK_LIBRARIES(Demo  pthread panutils_thread panutils_structs panutils_network)
+else()
+TARGET_LINK_LIBRARIES(Demo  panutils_thread panutils_structs panutils_network)
+ENDIF ()  

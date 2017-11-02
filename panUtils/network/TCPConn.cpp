@@ -46,12 +46,18 @@ namespace panutils {
 	}
 	int TCPConn::RecvData(unsigned char * data, int size)
 	{
-		_mtxRecv.Lock();
-		if (size>_recvBuffer->CanRead())
+		if (nullptr==data||size<=0)
 		{
-			size = _recvBuffer->CanRead();
-			size = _recvBuffer->Read(data, size);
+			return -1;
 		}
+		_mtxRecv.Lock();
+
+		auto ptr=_recvBuffer->GetPtr(size, size);
+		if (nullptr!=ptr&&size>0)
+		{
+			memcpy(data, ptr, size);
+		}
+
 		_mtxRecv.Unlock();
 		return size;
 	}
