@@ -25,7 +25,7 @@ namespace panutils {
 
 		_mtxStatus.Lock();
 		_mtxSend.Lock();
-
+		
 		auto ret = _sendBuffer->Write(data, size);
 		if (ret<0)
 		{
@@ -146,8 +146,12 @@ namespace panutils {
 		if (_sendBuffer->CanRead()>0)
 		{
 			_size_pSend = _sendBuffer->CanRead();
+			if (_size_pSend>s_MTU)
+			{
+				_size_pSend = s_MTU;
+			}
 			_cur_pSend = 0;
-			_pSend = _sendBuffer->Read(_size_pSend, _size_pSend);
+			_pSend = _sendBuffer->GetPtr(_size_pSend, _size_pSend);
 			if (_pSend==nullptr||_size_pSend==0)
 			{
 				return;
@@ -166,12 +170,14 @@ namespace panutils {
 		/*
 		linux use socket send
 		windows use iocp
+
+		Ã¿´Î·¢ËÍMTU£¬linux send,windows wsasend
 		*/
 		while (_pSend != nullptr&&_cur_pSend<_size_pSend)
 		{
 			int err;
 			auto sendResult = SocketSend(_fd, (const char*)_pSend + _cur_pSend, _size_pSend - _cur_pSend, err);
-			if (err == E_SOCKET_WOULDBLOCK)
+			if (sendResult < 0&&err == E_SOCKET_WOULDBLOCK)
 			{
 				_writeable = false;
 				return -1;
@@ -183,9 +189,9 @@ namespace panutils {
 				return -1;
 			}
 			_cur_pSend += sendResult;
+			_sendBuffer->Ignore(sendResult);
 			if (_cur_pSend == _size_pSend)
 			{
-				delete[]_pSend;
 				_pSend = nullptr;
 				_cur_pSend = _size_pSend = 0;
 			}

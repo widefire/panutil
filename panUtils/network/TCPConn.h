@@ -51,6 +51,7 @@ namespace panutils {
 		RingBuffer *_recvBuffer;//buffer read out
 		SpinLock _mtxSend;
 		SpinLock _mtxRecv;
+		static const int s_MTU = 1500;
 	};
 
 }
