@@ -7,7 +7,7 @@ namespace panutils {
 	TCPServer::TCPServer() :_port(0), _fd(-1),_endLoop(true)
 	{
 #ifdef _WIN32
-		_hCompletionPort = nullptr;
+		_hICompletionPort = nullptr;
 		SYSTEM_INFO sysInfo;
 		GetSystemInfo(&sysInfo);
 		_numThread = sysInfo.dwNumberOfProcessors * 2;
