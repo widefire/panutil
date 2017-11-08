@@ -187,7 +187,8 @@ namespace panutils {
 		addr.sin_family = AF_INET;
 		addr.sin_port = htons(port);
 
-		fd = socket(AF_INET, SOCK_STREAM, 0);
+		//fd = socket(AF_INET, SOCK_STREAM, 0);
+		fd = WSASocket(AF_INET, SOCK_STREAM, 0, nullptr, 0, WSA_FLAG_OVERLAPPED);
 		if (fd<0)
 		{
 			err = SocketError();

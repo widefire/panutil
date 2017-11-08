@@ -10,17 +10,23 @@ namespace panutils {
 	{
 	public:
 
-		TCPConn(int fd);
+		TCPConn(int fd,void *lpParam=nullptr);
+		
 		/*
 		send data to send cache
 		*/
-		int SendData(unsigned char *data, int size);
+		int WriteData(unsigned char *data, int size);
+		/*
+		for iocp ,send end,only called by iocp server
+		*/
+		void Sended(int size);
 		/*
 		recv from recv cache buf,return 0 nodata, -1 for error
 		*/
-		int RecvData(unsigned char *data, int size);
+		int ReadData(unsigned char *data, int size);
 		/*
-		append data to recv cache
+		append data to recv cache,epoll or iocp.
+		or user rewrite it, self process data,not use cache and ReadData func
 		*/
 		virtual int Recved(unsigned char *data, int size);
 		/*
@@ -51,6 +57,7 @@ namespace panutils {
 		RingBuffer *_recvBuffer;//buffer read out
 		SpinLock _mtxSend;
 		SpinLock _mtxRecv;
+		void *_paramSocket;
 		static const int s_MTU = 1500;
 	};
 

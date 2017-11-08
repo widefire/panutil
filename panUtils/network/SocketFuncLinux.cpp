@@ -79,7 +79,7 @@ int SocketSend(int fd, const char *buf, int len, int &err, bool block) {
 			err = SocketError();
 			if ((err == E_SOCKET_WOULDBLOCK ||
 				err == E_SOCKET_INTR || err == E_SOCKET_AGAIN ||
-				err == E_SOCKET_INPROGRESS)) {
+				err == E_SOCKET_INPROGRESS || err = E_SOCKET_NOBUFS)) {
 				err = E_SOCKET_AGAIN;
 			}
 		}
@@ -110,7 +110,7 @@ int SocketRecv(int fd, char *buf, int len, int &err, bool block) {
 			err = SocketError();
 			if ((err == E_SOCKET_WOULDBLOCK ||
 				err == E_SOCKET_INTR || err == E_SOCKET_AGAIN ||
-				err == E_SOCKET_INPROGRESS)) {
+				err == E_SOCKET_INPROGRESS||err= E_SOCKET_NOBUFS)) {
 				err = E_SOCKET_AGAIN;
 			}
 		}

@@ -38,13 +38,13 @@ namespace panutils {
 		if (-1 == ret) {
 			return ;
 		}
-		_endEpoll = false;
+		_endLoop = false;
 		int nfds;
 		char recvBuf[EPOLL_RECV_SIZE];
 		std::cout << __FILE__ << __LINE__ << "begin while" << std::endl;
-		while (_endEpoll == false) {
+		while (_endLoop == false) {
 			nfds = epoll_wait(_epfd, events, EPOLL_MAX_EVENT, -1);
-			if (_endEpoll)
+			if (_endLoop)
 			{
 				std::cout << __LINE__ << "end loop" << std::endl;
 				break;
@@ -109,7 +109,7 @@ namespace panutils {
 						}
 						else if (ret < 0 && (errcode == E_SOCKET_WOULDBLOCK ||
 							errcode == E_SOCKET_INTR || errcode == E_SOCKET_AGAIN ||
-							errcode == E_SOCKET_INPROGRESS))
+							errcode == E_SOCKET_INPROGRESS||errcode== E_SOCKET_NOBUFS))
 						{
 							break;
 						}
@@ -133,7 +133,7 @@ namespace panutils {
 
 	int TCPServer::Stop()
 	{
-		_endEpoll = true;
+		_endLoop = true;
 		CloseSocket(_fd);
 		close(_epfd);
 		if (_threadEpoll.joinable()) {

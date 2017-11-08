@@ -3,6 +3,7 @@
 #include <time.h>
 #ifdef _WIN32
 #include <winsock2.h>
+#include <Windows.h>
 #pragma comment(lib,"ws2_32.lib")
 #else
 #include <sys/types.h>
@@ -26,11 +27,13 @@ namespace panutils {
 	const int E_SOCKET_INTR = WSAEINTR;
 	const int E_SOCKET_AGAIN = WSAEWOULDBLOCK;
 	const int E_SOCKET_INPROGRESS = WSAEINPROGRESS;
+	const int E_SOCKET_NOBUFS = WSAENOBUFS;
 #else
 	const int E_SOCKET_WOULDBLOCK = EWOULDBLOCK;
 	const int E_SOCKET_INTR = EINTR;
 	const int E_SOCKET_AGAIN = EAGAIN;
 	const int E_SOCKET_INPROGRESS = EINPROGRESS;
+	const int E_SOCKET_NOBUFS = ENOBUFS;
 #endif
 
 	

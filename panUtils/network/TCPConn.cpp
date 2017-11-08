@@ -2,13 +2,13 @@
 #include "SocketFunc.h"
 
 namespace panutils {
-	TCPConn::TCPConn(int fd):_fd(fd),_closed(false),_writeable(true),
-		_pSend(nullptr)
+	TCPConn::TCPConn(int fd, void *lpParam) :_fd(fd), _closed(false), _writeable(true),
+		_pSend(nullptr), _paramSocket(lpParam)
 	{
 		_sendBuffer = new RingBuffer(0xfffffff);
 		_recvBuffer = new RingBuffer(0xfffffff);
 	}
-	int TCPConn::SendData(unsigned char * data, int size)
+	int TCPConn::WriteData(unsigned char * data, int size)
 	{
 		if (nullptr==data||size<=0)
 		{
@@ -34,17 +34,26 @@ namespace panutils {
 			return -1;
 		}
 
-		if (_writeable)
+		/*if (_writeable)
 		{
 			RealSend();
-		}
+		}*/
+		//aways try send
+		RealSend();
 
 		_mtxStatus.Unlock();
 		_mtxSend.Unlock();
 
 		return size;
 	}
-	int TCPConn::RecvData(unsigned char * data, int size)
+	void TCPConn::Sended(int size)
+	{
+		if (size>0)
+		{
+
+		}
+	}
+	int TCPConn::ReadData(unsigned char * data, int size)
 	{
 		if (nullptr==data||size<=0)
 		{
@@ -176,8 +185,34 @@ namespace panutils {
 		while (_pSend != nullptr&&_cur_pSend<_size_pSend)
 		{
 			int err;
+#ifdef _WIN32
+			DWORD	NumberOfBytesSent;
+			DWORD	flags = 0;
+			WSABUF wsaBuf;
+			wsaBuf.buf = (char*)_pSend + _cur_pSend;
+			wsaBuf.len = _size_pSend - _cur_pSend;
+			err = WSASend(_fd, &wsaBuf,1, &NumberOfBytesSent, flags, (LPWSAOVERLAPPED)_paramSocket, 0);
+			if (err!=0)
+			{
+				_writeable = false;
+				return -1;
+			}
+			else
+			{
+				if (NumberOfBytesSent>0)
+				{
+					_cur_pSend += NumberOfBytesSent;
+					_sendBuffer->Ignore(NumberOfBytesSent);
+					if (_cur_pSend == _size_pSend)
+					{
+						_pSend = nullptr;
+						_cur_pSend = _size_pSend = 0;
+					}
+				}
+			}
+#else
 			auto sendResult = SocketSend(_fd, (const char*)_pSend + _cur_pSend, _size_pSend - _cur_pSend, err);
-			if (sendResult < 0&&err == E_SOCKET_WOULDBLOCK)
+			if (sendResult < 0 && err == E_SOCKET_WOULDBLOCK)
 			{
 				_writeable = false;
 				return -1;
@@ -190,11 +225,14 @@ namespace panutils {
 			}
 			_cur_pSend += sendResult;
 			_sendBuffer->Ignore(sendResult);
-			if (_cur_pSend == _size_pSend)
+			if (_cur_pSend >= _size_pSend)
 			{
 				_pSend = nullptr;
 				_cur_pSend = _size_pSend = 0;
 			}
+#endif // _WIN32
+
+			
 		}
 
 		return 0;

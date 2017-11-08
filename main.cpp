@@ -25,7 +25,6 @@ int main(int argc, char **argv) {
 	ring_buffer.Ignore(1);
 	unsigned char dat[2];
 	ring_buffer.Read(dat, 2);
-
 	TestClient();
 
 	panutils::SocketShutdown();
