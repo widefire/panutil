@@ -42,7 +42,6 @@ namespace panutils {
 	private:
 		TCPConn(const TCPConn&) = delete;
 		void RealSend();
-		int RealSendPtr();
 
 		int _fd;
 		bool _closed;
@@ -51,9 +50,6 @@ namespace panutils {
 		std::string _remoteAddr;
 		SpinLock _mtxStatus;//for closed and writeable
 		RingBuffer *_sendBuffer;//buffer need send
-		unsigned char *_pSend;
-		int _size_pSend;
-		int _cur_pSend;
 		RingBuffer *_recvBuffer;//buffer read out
 		SpinLock _mtxSend;
 		SpinLock _mtxRecv;
