@@ -27,7 +27,7 @@ namespace panutils {
 			this->fd = fd;
 			memcpy(&this->clientAddr, &addr, sizeof(addr));
 			iodata = new PER_IO_DATA;
-			std::shared_ptr<TCPConn> conn(new TCPConn(fd, (void*)&iodata->overlapped));
+			std::shared_ptr<TCPConn> conn(new TCPConn(fd));
 			iodata->conn = conn;
 
 			std::string ip;
@@ -109,14 +109,11 @@ namespace panutils {
 	void TCPServer::IocpLoop()
 	{
 		std::vector<std::thread> recvWorkers;
-			//,sendWorkers;
 		for (int i = 0; i < _numThread; i++)
 		{
 			std::thread thread_I(std::mem_fun(&TCPServer::RecvWorker), this, _hICompletionPort);
 			recvWorkers.push_back(std::move(thread_I));
 
-			/*std::thread thread_O(std::mem_fun(&TCPServer::SendWorker), this, _hOCompletionPort);
-			sendWorkers.push_back(std::move(thread_O));*/
 
 		}
 

@@ -2,8 +2,7 @@
 #include "SocketFunc.h"
 
 namespace panutils {
-	TCPConn::TCPConn(int fd, void *lpParam) :_fd(fd), _closed(false), _writeable(true)
-		, _paramSocket(lpParam)
+	TCPConn::TCPConn(int fd) :_fd(fd), _closed(false), _writeable(true)
 	{
 		_sendBuffer = new RingBuffer(0xfffffff);
 	}
@@ -47,17 +46,18 @@ namespace panutils {
 
 		return size;
 	}
-	void TCPConn::Sended(int size)
-	{
-		if (size>0)
-		{
-			_mtxSend.Lock();
-			_sendBuffer->Ignore(size);
-			_writeable = true;
-			RealSend();
-			_mtxSend.Unlock();
-		}
-	}
+
+	//void TCPConn::Sended(int size)
+	//{
+	//	if (size>0)
+	//	{
+	//		_mtxSend.Lock();
+	//		_sendBuffer->Ignore(size);
+	//		_writeable = true;
+	//		RealSend();
+	//		_mtxSend.Unlock();
+	//	}
+	//}
 
 
 	int TCPConn::Recved(unsigned char * data, int size)

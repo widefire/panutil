@@ -10,7 +10,7 @@ namespace panutils {
 	{
 	public:
 
-		TCPConn(int fd,void *lpParam=nullptr);
+		TCPConn(int fd);
 		
 		/*
 		send data to send cache
@@ -19,22 +19,24 @@ namespace panutils {
 		/*
 		for iocp ,send end,only called by iocp server
 		*/
-		void Sended(int size);
+		//void Sended(int size);
 		/*
-		append data to recv cache,epoll or iocp.
-		or user rewrite it, self process data,not use cache and ReadData func
+		user rewrite it, self process data,not use cache and ReadData func
 		*/
 		virtual int Recved(unsigned char *data, int size);
 		/*
 		close socket
 		*/
 		int Close();//close 
-		void EnableWrite(bool enable);
 		virtual ~TCPConn();
 		void SetRemoteAddr(std::string remote_addr);
 		void Setport(int port);
 		std::string GetRemoteAddr();
 		int GetPort();
+		/*
+		called by server
+		*/
+		void EnableWrite(bool enable);
 	private:
 		TCPConn(const TCPConn&) = delete;
 		void RealSend();
@@ -47,7 +49,6 @@ namespace panutils {
 		SpinLock _mtxStatus;//for closed and writeable
 		RingBuffer *_sendBuffer;//buffer need send
 		SpinLock _mtxSend;
-		void *_paramSocket;
 		static const int s_MTU = 1400;
 	};
 
