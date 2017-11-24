@@ -87,8 +87,6 @@ namespace panutils {
 		return _data + _head;
 	}
 
-	需要新的成员位**的buffer,而不是成员是*
-	可以std
 
 
 	int RingBuffer::Write(unsigned char * data, int size)

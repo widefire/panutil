@@ -16,7 +16,10 @@ namespace panutils {
 	public:
 		TCPServer();
 		~TCPServer();
-		int Init(int port);//return 0 succeed
+		/*
+		return 0 succeed
+		*/
+		int Init(int port);
 		int Start();
 		int Stop();
 
@@ -32,9 +35,7 @@ namespace panutils {
 #ifdef _WIN32
 		void IocpLoop();
 		void RecvWorker(void *lpParam);
-		void SendWorker(void *lpParam);
 		void* _hICompletionPort;
-		void* _hOCompletionPort;
 #endif // _
 
 	private:

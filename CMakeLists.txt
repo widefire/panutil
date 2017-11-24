@@ -18,9 +18,10 @@ add_subdirectory(panUtils/thread)
 add_subdirectory(panUtils/structs)
 add_subdirectory(panUtils/network)
 
-
+file(GLOB_RECURSE CURRENT_HEADERS  *.h *.hpp)
+source_group("Include" FILES ${CURRENT_HEADERS})
 #指定生成目标
-add_executable(Demo ${DIR_SRCS})
+add_executable(Demo ${DIR_SRCS} ${CURRENT_HEADERS})
 
 #添加链接库
 IF (CMAKE_SYSTEM_NAME MATCHES "Linux") 

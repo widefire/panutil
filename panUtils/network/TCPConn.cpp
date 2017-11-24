@@ -6,9 +6,8 @@ namespace panutils {
 		, _paramSocket(lpParam)
 	{
 		_sendBuffer = new RingBuffer(0xfffffff);
-		_recvBuffer = new RingBuffer(0xfffffff);
 	}
-	int TCPConn::WriteData(unsigned char * data, int size)
+	int TCPConn::Send(unsigned char * data, int size)
 	{
 		if (nullptr==data||size<=0)
 		{
@@ -34,10 +33,11 @@ namespace panutils {
 		}
 #ifdef _WIN32
 
-		if (_writeable)
+		/*if (_writeable)
 		{
 			RealSend();
-		}
+		}*/
+		RealSend();
 #else
 		RealSend();
 #endif
@@ -58,29 +58,12 @@ namespace panutils {
 			_mtxSend.Unlock();
 		}
 	}
-	int TCPConn::ReadData(unsigned char * data, int size)
-	{
-		if (nullptr==data||size<=0)
-		{
-			return -1;
-		}
-		_mtxRecv.Lock();
 
-		auto ptr=_recvBuffer->GetPtr(size, size);
-		if (nullptr!=ptr&&size>0)
-		{
-			memcpy(data, ptr, size);
-		}
 
-		_mtxRecv.Unlock();
-		return size;
-	}
 	int TCPConn::Recved(unsigned char * data, int size)
 	{
-		_mtxRecv.Lock();
-		auto ret = _recvBuffer->Write(data, size);
-		_mtxRecv.Unlock();
-		return ret;
+		//do nothing here
+		return -1;
 	}
 	int TCPConn::Close()
 	{
@@ -126,10 +109,6 @@ namespace panutils {
 		_writeable = false;
 		_mtxSend.Unlock();
 
-		_mtxRecv.Lock();
-		delete _recvBuffer;
-		_recvBuffer = nullptr;
-		_mtxRecv.Unlock();
 	}
 	void TCPConn::SetRemoteAddr(std::string remote_addr)
 	{
@@ -156,7 +135,8 @@ namespace panutils {
 			size_send = size_send < s_MTU ? size_send : s_MTU;
 			auto ptr = _sendBuffer->GetPtr(size_send, size_send);
 			int err=0;
-#ifdef _WIN32
+//#ifdef _WIN32
+#if false
 			DWORD	NumberOfBytesSent;
 			DWORD	flags = 0;
 			WSABUF wsaBuf;

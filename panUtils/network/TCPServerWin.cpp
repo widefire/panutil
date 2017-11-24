@@ -8,24 +8,33 @@ namespace panutils {
 #ifdef _WIN32
 	const int EPOLL_RECV_SIZE = 2048;
 	struct PER_IO_DATA {
-		PER_IO_DATA(){
-			wsaBuf.buf = buf;
-			wsaBuf.len = EPOLL_RECV_SIZE;
-			len = 0;
-		}
 		OVERLAPPED overlapped;
 		WSABUF wsaBuf;
 		char buf[EPOLL_RECV_SIZE];
 		int len;
 		std::shared_ptr<TCPConn> conn;
+		PER_IO_DATA() {
+			memset(&overlapped, 0, sizeof(OVERLAPPED));
+			wsaBuf.buf = buf;
+			wsaBuf.len = EPOLL_RECV_SIZE;
+			len = 0;
+		}
 	};
 
 	struct PER_HANDLE_DATA
 	{
-		PER_HANDLE_DATA() {
+		PER_HANDLE_DATA(int fd,sockaddr_in addr) {
+			this->fd = fd;
+			memcpy(&this->clientAddr, &addr, sizeof(addr));
 			iodata = new PER_IO_DATA;
 			std::shared_ptr<TCPConn> conn(new TCPConn(fd, (void*)&iodata->overlapped));
 			iodata->conn = conn;
+
+			std::string ip;
+			int port;
+			GetIPPort(&addr, ip, port);
+			conn->SetRemoteAddr(ip);
+			conn->Setport(port);
 		}
 		~PER_HANDLE_DATA()
 		{
@@ -35,11 +44,15 @@ namespace panutils {
 		sockaddr_in	clientAddr;
 		PER_IO_DATA *iodata;
 	};
-
+	//HANDLE hCompletion;
 	int TCPServer::Start()
 	{
-		_hICompletionPort = (void*)CreateIoCompletionPort(INVALID_HANDLE_VALUE, nullptr, 0, 0);
-		_hOCompletionPort = (void*)CreateIoCompletionPort(INVALID_HANDLE_VALUE, nullptr, 0, 0);
+		/*_hICompletionPort = (void*)CreateIoCompletionPort(INVALID_HANDLE_VALUE, nullptr, 0, 0);
+		_hOCompletionPort = (void*)CreateIoCompletionPort(INVALID_HANDLE_VALUE, nullptr, 0, 0);*/
+		auto tmpHandle= CreateIoCompletionPort(INVALID_HANDLE_VALUE, nullptr, 0, 0);
+		//hCompletion = tmpHandle;
+		_hICompletionPort = new HANDLE;
+		memcpy(_hICompletionPort, &tmpHandle, sizeof(HANDLE));
 		_endLoop = false;
 		//create a thread to loop 
 		/*
@@ -58,13 +71,9 @@ namespace panutils {
 		_endLoop = true;
 		if (_hICompletionPort!=nullptr)
 		{
-			CloseHandle((HANDLE)_hICompletionPort);
+			CloseHandle(*(HANDLE*)_hICompletionPort);
+			delete (HANDLE*)_hICompletionPort;
 			_hICompletionPort = nullptr;
-		}
-		if (_hOCompletionPort!=nullptr)
-		{
-			CloseHandle((HANDLE)_hOCompletionPort);
-			_hOCompletionPort = nullptr;
 		}
 		CloseSocket(_fd);
 		_fd = -1;
@@ -99,14 +108,15 @@ namespace panutils {
 
 	void TCPServer::IocpLoop()
 	{
-		std::vector<std::thread> recvWorkers,sendWorkers;
+		std::vector<std::thread> recvWorkers;
+			//,sendWorkers;
 		for (int i = 0; i < _numThread; i++)
 		{
 			std::thread thread_I(std::mem_fun(&TCPServer::RecvWorker), this, _hICompletionPort);
 			recvWorkers.push_back(std::move(thread_I));
 
-			std::thread thread_O(std::mem_fun(&TCPServer::SendWorker), this, _hOCompletionPort);
-			sendWorkers.push_back(std::move(thread_O));
+			/*std::thread thread_O(std::mem_fun(&TCPServer::SendWorker), this, _hOCompletionPort);
+			sendWorkers.push_back(std::move(thread_O));*/
 
 		}
 
@@ -123,20 +133,22 @@ namespace panutils {
 
 			//new conn
 
-			auto handleData = new PER_HANDLE_DATA;
-			handleData->fd = infd;
+			auto handleData = new PER_HANDLE_DATA(infd, addrRemote);
 
 			memcpy(&handleData->clientAddr, &addrRemote, addrLen);
-			CreateIoCompletionPort((HANDLE)infd, _hICompletionPort, (ULONG_PTR)handleData, 0);
-			CreateIoCompletionPort((HANDLE)infd, _hOCompletionPort, (ULONG_PTR)handleData, 0);
-
+			//CreateIoCompletionPort((HANDLE)infd, hCompletion, (ULONG_PTR)handleData, 0);
+			CreateIoCompletionPort((HANDLE)infd, (*(HANDLE*)_hICompletionPort), (ULONG_PTR)handleData, 0);
+			memset(&handleData->iodata->overlapped, 0, sizeof(OVERLAPPED));
+			handleData->iodata->wsaBuf.buf = handleData->iodata->buf;
+			handleData->iodata->wsaBuf.len = EPOLL_RECV_SIZE;
 			OnNewConn(handleData->iodata->conn);
 			//recv
 			//no send
 
 			DWORD	recvBytes;
 			DWORD	flags = 0;
-			WSARecv(handleData->fd, &(handleData->iodata->wsaBuf), 1, &recvBytes, &flags, &(handleData->iodata->overlapped), 0);
+			WSARecv(handleData->fd, &(handleData->iodata->wsaBuf), 1, 
+				&recvBytes, &flags, &(handleData->iodata->overlapped), 0);
 		}
 
 
@@ -147,16 +159,20 @@ namespace panutils {
 				recvWorkers[i].join();
 			}
 
-			if (sendWorkers[i].joinable())
+			/*if (sendWorkers[i].joinable())
 			{
 				sendWorkers[i].join();
-			}
+			}*/
 		}
 	}
 
 	void TCPServer::RecvWorker(void * lpParam)
 	{
-		HANDLE				completionPort = static_cast<HANDLE>(lpParam);
+		if (nullptr==lpParam)
+		{
+			return;
+		}
+		HANDLE				completionPort = static_cast<HANDLE>(*(HANDLE*)lpParam);
 		DWORD				bytesTransferred;
 		LPOVERLAPPED		lpOverlapped = 0;
 		PER_HANDLE_DATA		*lpHandleData = nullptr;
@@ -166,13 +182,14 @@ namespace panutils {
 
 		while (!_endLoop)
 		{
-			iRet = GetQueuedCompletionStatus(completionPort, &bytesTransferred, (PULONG_PTR)&lpHandleData,
+			iRet = GetQueuedCompletionStatus(completionPort, &bytesTransferred, 
+				(PULONG_PTR)&lpHandleData,
 				(LPOVERLAPPED*)&lpOverlapped, INFINITE);
 			if (0==iRet)
 			{
 				lpHandleData->iodata->conn->Close();
-				delete lpHandleData;
 				OnErr(lpHandleData->iodata->conn, 0);
+				delete lpHandleData;
 				continue;
 			}
 
@@ -180,51 +197,18 @@ namespace panutils {
 			if (0==bytesTransferred)
 			{
 				lpHandleData->iodata->conn->Close();
-				delete lpHandleData;
 				OnErr(lpHandleData->iodata->conn, 0);
+				delete lpHandleData;
 				continue;
 			}
 
 			lpHandleData->iodata->conn->Recved((unsigned char*)lpHandleData->iodata->wsaBuf.buf,
 				bytesTransferred);
-			WSARecv(lpHandleData->fd, &(lpHandleData->iodata->wsaBuf), 1, &recvBytes, &flags, &(lpHandleData->iodata->overlapped), 0);
+			WSARecv(lpHandleData->fd, &(lpHandleData->iodata->wsaBuf),
+				1, &recvBytes, &flags, &(lpHandleData->iodata->overlapped), 0);
 		}
 	}
 
-	void TCPServer::SendWorker(void * lpParam)
-	{
-		HANDLE				completionPort = static_cast<HANDLE>(lpParam);
-		DWORD				bytesTransferred;
-		LPOVERLAPPED		lpOverlapped = 0;
-		PER_HANDLE_DATA		*lpHandleData = nullptr;
-		DWORD				recvBytes = 0;
-		DWORD				flags = 0;
-		int					iRet = 0;
-
-		while (!_endLoop) 
-		{
-			iRet = GetQueuedCompletionStatus(completionPort, &bytesTransferred, (PULONG_PTR)&lpHandleData,
-				(LPOVERLAPPED*)&lpOverlapped, INFINITE);
-			if (0 == iRet)
-			{
-				lpHandleData->iodata->conn->Close();
-				delete lpHandleData;
-				OnErr(lpHandleData->iodata->conn, 0);
-				continue;
-			}
-
-			auto iodata = (PER_IO_DATA*)CONTAINING_RECORD(lpOverlapped, PER_IO_DATA, overlapped);
-			if (0 == bytesTransferred)
-			{
-				lpHandleData->iodata->conn->Close();
-				delete lpHandleData;
-				OnErr(lpHandleData->iodata->conn, 0);
-				continue;
-			}
-
-			lpHandleData->iodata->conn->Sended(bytesTransferred);
-		}
-	}
 #endif
 
 }

@@ -5,8 +5,7 @@
 
 void TestClient()
 {
-	//auto fd = panutils::SocketClientTCP("www.baidu.com", 80);
-	auto fd = panutils::SocketClientTCP("127.0.0.1", 8081);
+	auto fd = panutils::SocketClientTCP("176.122.159.9", 8081);
 	const char *buf = "ahahaha\n";
 	char cache[20];
 	int err;
@@ -32,4 +31,17 @@ void TestClient()
 	/*svr.Stop();
 	std::cout << __LINE__ << " stoped" << std::endl;*/
 	std::cin >> err;
+}
+
+void TestServer()
+{
+	panutils::TCPServer svr;
+	int ret = svr.Init(3000);
+	if (ret!=0)
+	{
+		return;
+	}
+	ret = svr.Start();
+	//svr.Stop();
+	std::cin >> ret;
 }

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <time.h>
+#include <string>
 #ifdef _WIN32
 #include <winsock2.h>
 #include <Windows.h>
@@ -53,10 +54,14 @@ namespace panutils {
 	int SocketClientUDP();
 	int SocketBufSize(int fd, bool bsend);
 
+	int GetIPPort(sockaddr_in *addr, std::string &ip, int &port);
+
 	/*
 	create socket,bind and listen
 	*/
 	int SocketServerTCP(int port,int &fd);//return 0 succed
 
 	void SocketSetTimeout(int fd, timeval time,bool b_recv);
+
+
 }

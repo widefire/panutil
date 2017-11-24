@@ -187,8 +187,8 @@ namespace panutils {
 		addr.sin_family = AF_INET;
 		addr.sin_port = htons(port);
 
-		//fd = socket(AF_INET, SOCK_STREAM, 0);
-		fd = WSASocket(AF_INET, SOCK_STREAM, 0, nullptr, 0, WSA_FLAG_OVERLAPPED);
+		fd = socket(AF_INET, SOCK_STREAM, 0);
+		//fd = WSASocket(AF_INET, SOCK_STREAM, 0, nullptr, 0, WSA_FLAG_OVERLAPPED);
 		if (fd<0)
 		{
 			err = SocketError();
@@ -234,6 +234,16 @@ namespace panutils {
 		{
 			setsockopt(fd, SOL_SOCKET, SO_SNDTIMEO, (const char *)(&out), sizeof(out));
 		}
+	}
+
+	int GetIPPort(sockaddr_in *addr, std::string &ip, int &port) {
+		if (nullptr==addr)
+		{
+			return -1;
+		}
+		ip= inet_ntoa(addr->sin_addr);
+		port = addr->sin_port;
+		return 0;
 	}
 }
 
