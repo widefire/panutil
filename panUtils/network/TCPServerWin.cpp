@@ -47,10 +47,7 @@ namespace panutils {
 	//HANDLE hCompletion;
 	int TCPServer::Start()
 	{
-		/*_hICompletionPort = (void*)CreateIoCompletionPort(INVALID_HANDLE_VALUE, nullptr, 0, 0);
-		_hOCompletionPort = (void*)CreateIoCompletionPort(INVALID_HANDLE_VALUE, nullptr, 0, 0);*/
 		auto tmpHandle= CreateIoCompletionPort(INVALID_HANDLE_VALUE, nullptr, 0, 0);
-		//hCompletion = tmpHandle;
 		_hICompletionPort = new HANDLE;
 		memcpy(_hICompletionPort, &tmpHandle, sizeof(HANDLE));
 		_endLoop = false;
