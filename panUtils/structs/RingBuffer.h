@@ -20,6 +20,7 @@ namespace panutils {
 		void MoveDataToHead();
 
 		RingBuffer(const RingBuffer&) = delete;
+		RingBuffer& operator=(const RingBuffer&) = delete;
 	private:
 		static const int s_base_size;
 		unsigned char *_data;

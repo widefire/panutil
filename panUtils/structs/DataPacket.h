@@ -10,6 +10,7 @@ namespace panutils {
 		DataPacket(unsigned char *data, int size);
 		~DataPacket();
 		DataPacket(const DataPacket&rt);
+		DataPacket &operator=(const DataPacket &) = delete;
 		unsigned char *_data;
 		int _size;
 	};
