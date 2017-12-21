@@ -7,12 +7,13 @@ namespace panutils {
 		/*
 		copy data to data packet
 		*/
-		DataPacket(unsigned char *data, int size);
+		DataPacket(unsigned char *data, int size,int type=0);
 		~DataPacket();
-		DataPacket(const DataPacket&rt);
-		DataPacket &operator=(const DataPacket &) = delete;
-		unsigned char *_data;
-		int _size;
+		DataPacket(const DataPacket&rh);
+		DataPacket &operator=(const DataPacket &) ;
+		unsigned char *_data = nullptr;
+		int _size = 0;
+		int _type = 0;
 	};
 }
 

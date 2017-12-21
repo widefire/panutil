@@ -146,7 +146,7 @@ namespace panutils {
 		}
 
 
-		for (auto i = 0; i < recvWorkers.size(); i++)
+		for (size_t i = 0; i < recvWorkers.size(); i++)
 		{
 			if (recvWorkers[i].joinable())
 			{

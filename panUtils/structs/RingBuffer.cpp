@@ -215,6 +215,10 @@ namespace panutils {
 			_tail -= _head;
 			_head = 0;
 		}
+		else
+		{
+			_head = _tail = 0;
+		}
 	}
 
 }
