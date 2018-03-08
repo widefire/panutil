@@ -15,8 +15,8 @@ namespace panutils {
 		tm.tm_min = wtm.wMinute;
 		tm.tm_sec = wtm.wSecond;
 		tm.tm_isdst = -1;
-		clock = mktime(&tm);
-		tp->tv_sec = clock;
+		clock =(long) mktime(&tm);
+		tp->tv_sec = (long)clock;
 		tp->tv_usec = wtm.wMilliseconds * 1000;
 		return ;
 	}
@@ -135,7 +135,7 @@ namespace panutils {
 			svrAddr.sin_addr = *(in_addr*)host->h_addr_list[0];
 			svrAddr.sin_port = htons(port);
 
-			fd = socket(AF_INET, SOCK_STREAM, 0);
+			fd = (int)socket(AF_INET, SOCK_STREAM, 0);
 			if (fd<0) {
 				return fd;
 			}
@@ -161,7 +161,7 @@ namespace panutils {
 
 
 	int SocketClientUDP() {
-		return socket(AF_INET, SOCK_DGRAM, 0);
+		return (int)socket(AF_INET, SOCK_DGRAM, 0);
 	}
 
 	int SocketBufSize(int fd, bool bsend) {
@@ -187,7 +187,7 @@ namespace panutils {
 		addr.sin_family = AF_INET;
 		addr.sin_port = htons(port);
 
-		fd = socket(AF_INET, SOCK_STREAM, 0);
+		fd = (int)socket(AF_INET, SOCK_STREAM, 0);
 		//fd = WSASocket(AF_INET, SOCK_STREAM, 0, nullptr, 0, WSA_FLAG_OVERLAPPED);
 		if (fd<0)
 		{

@@ -15,7 +15,7 @@ namespace panutils {
 	{
 	public:
 		TCPServer();
-		~TCPServer();
+		virtual ~TCPServer();
 		/*
 		return 0 succeed
 		*/
@@ -25,7 +25,7 @@ namespace panutils {
 
 		virtual void OnNewConn(std::shared_ptr<TCPConn> conn);//notify new connect
 		virtual void OnErr(std::shared_ptr<TCPConn> conn, int err);//notify conn err,closed
-		
+		virtual void OnNewData(std::shared_ptr<TCPConn> conn, unsigned char *data, int size);
 	private:
 
 		void EnableWrite(int fd);

@@ -182,7 +182,8 @@ namespace panutils {
 		auto it = _mapConn.find(fd);
 		if (it != _mapConn.end())
 		{
-			it->second->Recved(data, size);
+			//it->second->Recved(data, size);
+			this->OnNewData(it->second, data, size);
 		}
 	}
 #endif // !_WIN32

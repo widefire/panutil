@@ -5,6 +5,7 @@ namespace panutils {
 	TCPConn::TCPConn(int fd) :_fd(fd), _closed(false), _writeable(true)
 	{
 		_sendBuffer = new RingBuffer(0xfffffff);
+		_recvBuffer = new RingBuffer(0xfffffff);
 	}
 	int TCPConn::Send(unsigned char * data, int size)
 	{
@@ -62,8 +63,28 @@ namespace panutils {
 
 	int TCPConn::Recved(unsigned char * data, int size)
 	{
-		//do nothing here
 		return -1;
+		//do nothing here
+		_mtxRecv.Lock();
+		auto ret = _recvBuffer->Write(data, size);
+		_mtxRecv.Unlock();
+		return ret;
+	}
+	std::shared_ptr<DataPacket> TCPConn::ReadAll()
+	{
+		_mtxRecv.Lock();
+		if (_recvBuffer->CanRead() <= 0) {
+
+			_mtxRecv.Unlock();
+			return nullptr;
+		}
+		std::shared_ptr<DataPacket> pkt(new DataPacket());
+		pkt->_size = _recvBuffer->CanRead();
+		pkt->_data = new unsigned char[pkt->_size];
+		_recvBuffer->Read(pkt->_data, pkt->_size);
+
+		_mtxRecv.Unlock();
+		return pkt;
 	}
 	int TCPConn::Close()
 	{
@@ -108,6 +129,14 @@ namespace panutils {
 		_sendBuffer = nullptr;
 		_writeable = false;
 		_mtxSend.Unlock();
+
+		_mtxRecv.Lock();
+		if (_recvBuffer!=nullptr)
+		{
+			delete _recvBuffer;
+			_recvBuffer = nullptr;
+		}
+		_mtxRecv.Unlock();
 
 	}
 	void TCPConn::SetRemoteAddr(std::string remote_addr)

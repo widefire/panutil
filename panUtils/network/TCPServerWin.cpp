@@ -127,7 +127,7 @@ namespace panutils {
 
 			//new conn
 
-			auto handleData = new PER_HANDLE_DATA(infd, addrRemote);
+			auto handleData = new PER_HANDLE_DATA((int)infd, addrRemote);
 
 			memcpy(&handleData->clientAddr, &addrRemote, addrLen);
 			//CreateIoCompletionPort((HANDLE)infd, hCompletion, (ULONG_PTR)handleData, 0);
@@ -196,7 +196,10 @@ namespace panutils {
 				continue;
 			}
 
-			lpHandleData->iodata->conn->Recved((unsigned char*)lpHandleData->iodata->wsaBuf.buf,
+			/*lpHandleData->iodata->conn->Recved((unsigned char*)lpHandleData->iodata->wsaBuf.buf,
+				bytesTransferred);*/
+			this->OnNewData(lpHandleData->iodata->conn,
+				(unsigned char*)lpHandleData->iodata->wsaBuf.buf,
 				bytesTransferred);
 			WSARecv(lpHandleData->fd, &(lpHandleData->iodata->wsaBuf),
 				1, &recvBytes, &flags, &(lpHandleData->iodata->overlapped), 0);

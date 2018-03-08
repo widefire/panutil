@@ -4,7 +4,7 @@ namespace panutils {
 	class RingBuffer
 	{
 	public:
-		RingBuffer(int maxSize);
+		RingBuffer(int maxSize=0x7fffffff);
 		~RingBuffer();
 		int CanRead();//size can read
 		int Write(unsigned char *data, int size);//size writed

@@ -3,6 +3,7 @@
 #include <string>
 #include "../thread/Locker.h"
 #include "../structs/RingBuffer.h"
+#include "../structs/DataPacket.h"
 //used for TCP server connect ,no block.
 namespace panutils {
 	class TCPServer;
@@ -24,6 +25,8 @@ namespace panutils {
 		user rewrite it, self process data,not use cache and ReadData func
 		*/
 		virtual int Recved(unsigned char *data, int size);
+
+		std::shared_ptr<DataPacket> ReadAll();
 		/*
 		close socket
 		*/
@@ -37,6 +40,7 @@ namespace panutils {
 		called by server
 		*/
 		void EnableWrite(bool enable);
+
 	private:
 		TCPConn(const TCPConn&) = delete;
 		void RealSend();
@@ -47,9 +51,11 @@ namespace panutils {
 		int _port;
 		std::string _remoteAddr;
 		SpinLock _mtxStatus;//for closed and writeable
-		RingBuffer *_sendBuffer;//buffer need send
+		RingBuffer *_sendBuffer=nullptr;//buffer need send
 		SpinLock _mtxSend;
 		static const int s_MTU = 1400;
+		RingBuffer *_recvBuffer = nullptr;
+		SpinLock _mtxRecv;
 	};
 
 }

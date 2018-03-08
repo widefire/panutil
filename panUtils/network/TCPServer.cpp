@@ -44,5 +44,11 @@ namespace panutils {
 		//do nothing here
 	}
 
+	void TCPServer::OnNewData(std::shared_ptr<TCPConn> conn, unsigned char * data, int size)
+	{
+	}
+
+
+
 
 }
