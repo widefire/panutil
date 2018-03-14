@@ -9,6 +9,14 @@
 #include <thread>
 #include <vector>
 
+#ifdef _WIN64
+#define WINDOW_SYSTEM
+#endif // _WIN64
+#ifndef WINDOW_SYSTEM
+#ifdef _WIN32
+#define WINDOW_SYSTEM
+#endif
+#endif // !1
 
 namespace panutils {
 	class TCPServer
@@ -32,7 +40,7 @@ namespace panutils {
 		void NewFd(int fd, std::string addr, int port);//create conn,call onNewConn
 		void CloseFd(int fd);
 		void NewData(int fd, unsigned char *data, int size);
-#ifdef _WIN32
+#ifdef WINDOW_SYSTEM
 		void IocpLoop();
 		void RecvWorker(void *lpParam);
 		void* _hICompletionPort;
@@ -44,7 +52,7 @@ namespace panutils {
 		int _fd;
 		volatile bool _endLoop;
 		
-#ifdef _WIN32
+#ifdef WINDOW_SYSTEM
 		std::vector<std::map<int,std::shared_ptr<TCPConn>>> _vecConnPtr;
 		std::vector<std::shared_ptr<RWLock>> _vecConnMtx;
 		int _numThread;//for windows ,mul thread .
@@ -54,7 +62,7 @@ namespace panutils {
 		int _epfd;
 		std::thread _threadEpoll;
 		void EpollLoop();
-#endif // _WIN32
+#endif // WINDOW_SYSTEM
 		
 	};
 

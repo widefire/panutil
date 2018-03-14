@@ -1,11 +1,13 @@
 #include "TCPConn.h"
 #include "SocketFunc.h"
+#include "../baseUtils/BaseUtils.h"
 
 namespace panutils {
 	TCPConn::TCPConn(int fd) :_fd(fd), _closed(false), _writeable(true)
 	{
 		_sendBuffer = new RingBuffer(0xfffffff);
 		_recvBuffer = new RingBuffer(0xfffffff);
+		panutils::generateGUID64(_id);
 	}
 	int TCPConn::Send(unsigned char * data, int size)
 	{
@@ -31,7 +33,7 @@ namespace panutils {
 			_mtxSend.Unlock();
 			return -1;
 		}
-#ifdef _WIN32
+#ifdef WINDOW_SYSTEM
 
 		/*if (_writeable)
 		{
@@ -114,6 +116,10 @@ namespace panutils {
 
 		_mtxSend.Unlock();
 	}
+	std::string TCPConn::ID()
+	{
+		return _id;
+	}
 	TCPConn::~TCPConn()
 	{
 		_mtxStatus.Lock();
@@ -155,6 +161,10 @@ namespace panutils {
 	{
 		return _port;
 	}
+	bool TCPConn::Closed()
+	{
+		return this->_closed;
+	}
 	void TCPConn::RealSend()
 	{
 
@@ -164,7 +174,7 @@ namespace panutils {
 			size_send = size_send < s_MTU ? size_send : s_MTU;
 			auto ptr = _sendBuffer->GetPtr(size_send, size_send);
 			int err=0;
-//#ifdef _WIN32
+//#ifdef WINDOW_SYSTEM
 #if false
 			DWORD	NumberOfBytesSent;
 			DWORD	flags = 0;
@@ -182,11 +192,19 @@ namespace panutils {
 				return ;
 			}
 			_sendBuffer->Ignore(sendResult);
-#endif // _WIN32
+#endif // WINDOW_SYSTEM
 
 		}
 
 	}
 	
+
+	basePanObj::basePanObj()
+	{
+	}
+
+	basePanObj::~basePanObj()
+	{
+	}
 
 }

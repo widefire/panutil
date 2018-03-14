@@ -1,6 +1,6 @@
-#ifndef _WIN32
-#include "SocketFunc.h"
 
+#include "SocketFunc.h"
+#ifndef WINDOW_SYSTEM
 namespace panutils {
 
 void signalHandler(int n_signal) {

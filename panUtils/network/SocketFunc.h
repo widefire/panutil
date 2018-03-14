@@ -1,8 +1,18 @@
 #pragma once
 
+
+#ifdef _WIN64
+#define WINDOW_SYSTEM
+#endif // _WIN64
+#ifndef WINDOW_SYSTEM
+#ifdef _WIN32
+#define WINDOW_SYSTEM
+#endif
+#endif // !1
+
 #include <time.h>
 #include <string>
-#ifdef _WIN32
+#ifdef WINDOW_SYSTEM
 #include <winsock2.h>
 #include <Windows.h>
 #pragma comment(lib,"ws2_32.lib")
@@ -17,12 +27,12 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include <netdb.h>
-#endif // _WIN32
+#endif // WINDOW_SYSTEM
 
 namespace panutils {
 
 	const int E_SOCKET_ERROR = -1;
-#ifdef _WIN32
+#ifdef WINDOW_SYSTEM
 	void	gettimeval(struct timeval *tp);
 	const int E_SOCKET_WOULDBLOCK = WSAEWOULDBLOCK;
 	const int E_SOCKET_INTR = WSAEINTR;

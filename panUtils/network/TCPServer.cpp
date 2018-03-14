@@ -6,19 +6,20 @@ namespace panutils {
 
 	TCPServer::TCPServer() :_port(0), _fd(-1),_endLoop(true)
 	{
-#ifdef _WIN32
+#ifdef WINDOW_SYSTEM
 		_hICompletionPort = nullptr;
 		SYSTEM_INFO sysInfo;
 		GetSystemInfo(&sysInfo);
 		_numThread = sysInfo.dwNumberOfProcessors * 2;
 #else
 		_epfd = -1;
-#endif // _WIN32
+#endif // WINDOW_SYSTEM
 
 	}
 
 	TCPServer::~TCPServer()
 	{
+		this->Stop();
 	}
 
 	int TCPServer::Init(int port)

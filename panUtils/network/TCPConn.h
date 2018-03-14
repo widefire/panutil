@@ -5,14 +5,24 @@
 #include "../structs/RingBuffer.h"
 #include "../structs/DataPacket.h"
 //used for TCP server connect ,no block.
+
 namespace panutils {
 	class TCPServer;
+
+	//typedef  void (*TCPConnReleaseFunc)(void *param);
+	class basePanObj
+	{
+	public:
+		basePanObj();
+		virtual~basePanObj() ;
+
+	};
+
 	class TCPConn
 	{
 	public:
 
 		TCPConn(int fd);
-		
 		/*
 		send data to send cache
 		*/
@@ -36,11 +46,15 @@ namespace panutils {
 		void Setport(int port);
 		std::string GetRemoteAddr();
 		int GetPort();
+		bool Closed();
 		/*
 		called by server
 		*/
 		void EnableWrite(bool enable);
-
+		std::shared_ptr<basePanObj> _usrObj = nullptr;
+		std::string ID();
+		/*void * _usrData = nullptr;
+		TCPConnReleaseFunc	_releasefunc = nullptr;*/
 	private:
 		TCPConn(const TCPConn&) = delete;
 		void RealSend();
@@ -56,6 +70,7 @@ namespace panutils {
 		static const int s_MTU = 1400;
 		RingBuffer *_recvBuffer = nullptr;
 		SpinLock _mtxRecv;
+		std::string _id;
 	};
 
 }

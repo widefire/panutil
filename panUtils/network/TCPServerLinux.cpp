@@ -5,7 +5,7 @@
 
 namespace panutils {
 
-#ifndef _WIN32
+#ifndef WINDOW_SYSTEM
 
 	int TCPServer::Start()
 	{
@@ -186,7 +186,7 @@ namespace panutils {
 			this->OnNewData(it->second, data, size);
 		}
 	}
-#endif // !_WIN32
+#endif // !WINDOW_SYSTEM
 
 	
 }

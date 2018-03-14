@@ -1,6 +1,8 @@
-#if defined(_WIN32)
+
 
 #include "SocketFunc.h"
+
+#if defined(WINDOW_SYSTEM)
 
 namespace panutils {
 	void	gettimeval(struct timeval *tp) {

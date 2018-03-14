@@ -5,7 +5,7 @@
 namespace panutils {
 
 
-#ifdef _WIN32
+#ifdef WINDOW_SYSTEM
 	const int EPOLL_RECV_SIZE = 2048;
 	struct PER_IO_DATA {
 		OVERLAPPED overlapped;
@@ -181,9 +181,12 @@ namespace panutils {
 				(LPOVERLAPPED*)&lpOverlapped, INFINITE);
 			if (0==iRet)
 			{
-				lpHandleData->iodata->conn->Close();
-				OnErr(lpHandleData->iodata->conn, 0);
-				delete lpHandleData;
+				if (lpHandleData!=nullptr)
+				{
+					lpHandleData->iodata->conn->Close();
+					OnErr(lpHandleData->iodata->conn, 0);
+					delete lpHandleData;
+				}
 				continue;
 			}
 
