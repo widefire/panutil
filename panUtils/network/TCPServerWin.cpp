@@ -1,49 +1,16 @@
+
 #include "TCPServer.h"
 #include "SocketFunc.h"
-#include<chrono>
+#ifdef WINDOW_SYSTEM
+
+#include	"ITCPConn.h"
+#include "TCPConnWindows.h"
+#include	<chrono>
 
 namespace panutils {
 
 
-#ifdef WINDOW_SYSTEM
-	const int EPOLL_RECV_SIZE = 2048;
-	struct PER_IO_DATA {
-		OVERLAPPED overlapped;
-		WSABUF wsaBuf;
-		char buf[EPOLL_RECV_SIZE];
-		int len;
-		std::shared_ptr<TCPConn> conn;
-		PER_IO_DATA() {
-			memset(&overlapped, 0, sizeof(OVERLAPPED));
-			wsaBuf.buf = buf;
-			wsaBuf.len = EPOLL_RECV_SIZE;
-			len = 0;
-		}
-	};
 
-	struct PER_HANDLE_DATA
-	{
-		PER_HANDLE_DATA(int fd,sockaddr_in addr) {
-			this->fd = fd;
-			memcpy(&this->clientAddr, &addr, sizeof(addr));
-			iodata = new PER_IO_DATA;
-			std::shared_ptr<TCPConn> conn(new TCPConn(fd));
-			iodata->conn = conn;
-
-			std::string ip;
-			int port;
-			GetIPPort(&addr, ip, port);
-			conn->SetRemoteAddr(ip);
-			conn->Setport(port);
-		}
-		~PER_HANDLE_DATA()
-		{
-			delete iodata;
-		}
-		int	fd;
-		sockaddr_in	clientAddr;
-		PER_IO_DATA *iodata;
-	};
 	//HANDLE hCompletion;
 	int TCPServer::Start()
 	{
@@ -56,9 +23,8 @@ namespace panutils {
 		iocp use thread and task list
 		epoll not
 		*/
-		std::thread iocpThread(std::mem_fun(&TCPServer::IocpLoop), this);
-		_threadIocp = std::move(iocpThread);
-
+		
+		_threadIocp = std::move(std::thread(&TCPServer::IocpLoop, this));
 
 		return 0;
 	}
@@ -82,25 +48,6 @@ namespace panutils {
 		return 0;
 	}
 
-	void TCPServer::EnableWrite(int fd)
-	{
-
-	}
-
-	void TCPServer::NewFd(int fd, std::string addr, int port)
-	{
-		/*
-		notify
-		*/
-		//OnNewConn(conn);
-	}
-
-	void TCPServer::CloseFd(int fd) {
-
-	}
-	void TCPServer::NewData(int fd, unsigned char *data, int size) {
-
-	}
 
 
 	void TCPServer::IocpLoop()
@@ -108,10 +55,7 @@ namespace panutils {
 		std::vector<std::thread> recvWorkers;
 		for (int i = 0; i < _numThread; i++)
 		{
-			std::thread thread_I(std::mem_fun(&TCPServer::RecvWorker), this, _hICompletionPort);
-			recvWorkers.push_back(std::move(thread_I));
-
-
+			recvWorkers.push_back(std::move(std::thread(&TCPServer::RecvWorker, this, _hICompletionPort)));
 		}
 
 		while (_endLoop==false)
@@ -125,24 +69,19 @@ namespace panutils {
 				continue;
 			}
 
-			//new conn
+			auto handleData = new IOCP_HANDLER();
+			auto client = ITCPConn::CreateConn(infd);
+			handleData->conn = client;
+			auto winClient = dynamic_cast<TCPConnWindows*>(client.get());
+			
 
-			auto handleData = new PER_HANDLE_DATA((int)infd, addrRemote);
 
-			memcpy(&handleData->clientAddr, &addrRemote, addrLen);
-			//CreateIoCompletionPort((HANDLE)infd, hCompletion, (ULONG_PTR)handleData, 0);
 			CreateIoCompletionPort((HANDLE)infd, (*(HANDLE*)_hICompletionPort), (ULONG_PTR)handleData, 0);
-			memset(&handleData->iodata->overlapped, 0, sizeof(OVERLAPPED));
-			handleData->iodata->wsaBuf.buf = handleData->iodata->buf;
-			handleData->iodata->wsaBuf.len = EPOLL_RECV_SIZE;
-			OnNewConn(handleData->iodata->conn);
-			//recv
-			//no send
+			this->_dataCallback(handleData->conn, nullptr, 0,
+				this->_dataParam.lock());
 
-			DWORD	recvBytes;
-			DWORD	flags = 0;
-			WSARecv(handleData->fd, &(handleData->iodata->wsaBuf), 1, 
-				&recvBytes, &flags, &(handleData->iodata->overlapped), 0);
+			winClient->CallWindowRecv();
+			
 		}
 
 
@@ -169,7 +108,7 @@ namespace panutils {
 		HANDLE				completionPort = static_cast<HANDLE>(*(HANDLE*)lpParam);
 		DWORD				bytesTransferred;
 		LPOVERLAPPED		lpOverlapped = 0;
-		PER_HANDLE_DATA		*lpHandleData = nullptr;
+		IOCP_HANDLER		*lpHandleData = nullptr;
 		DWORD				recvBytes = 0;
 		DWORD				flags = 0;
 		int					iRet = 0;
@@ -179,36 +118,60 @@ namespace panutils {
 			iRet = GetQueuedCompletionStatus(completionPort, &bytesTransferred, 
 				(PULONG_PTR)&lpHandleData,
 				(LPOVERLAPPED*)&lpOverlapped, INFINITE);
+
+			std::shared_ptr<void> param = this->_dataParam.lock();
 			if (0==iRet)
 			{
 				if (lpHandleData!=nullptr)
 				{
-					lpHandleData->iodata->conn->Close();
-					OnErr(lpHandleData->iodata->conn, 0);
-					delete lpHandleData;
+					this->ProcessError(lpHandleData);
 				}
 				continue;
 			}
 
-			auto iodata=(PER_IO_DATA*)CONTAINING_RECORD(lpOverlapped, PER_IO_DATA, overlapped);
+			auto iodata=(IOCP_IO_DATA*)CONTAINING_RECORD(lpOverlapped, IOCP_IO_DATA, overlapped);
 			if (0==bytesTransferred)
 			{
-				lpHandleData->iodata->conn->Close();
-				OnErr(lpHandleData->iodata->conn, 0);
-				delete lpHandleData;
+				this->ProcessError(lpHandleData);
 				continue;
 			}
 
-			/*lpHandleData->iodata->conn->Recved((unsigned char*)lpHandleData->iodata->wsaBuf.buf,
-				bytesTransferred);*/
-			this->OnNewData(lpHandleData->iodata->conn,
-				(unsigned char*)lpHandleData->iodata->wsaBuf.buf,
-				bytesTransferred);
-			WSARecv(lpHandleData->fd, &(lpHandleData->iodata->wsaBuf),
-				1, &recvBytes, &flags, &(lpHandleData->iodata->overlapped), 0);
+			auto winClient = dynamic_cast<TCPConnWindows*>(lpHandleData->conn.get());
+			if (winClient==nullptr)
+			{
+				this->ProcessError(lpHandleData);
+				continue;
+			}
+
+			switch (iodata->ioType)
+			{
+			case IO_READ:
+				if (param!=nullptr)
+				{
+					this->_dataCallback(lpHandleData->conn, winClient->Buf(), bytesTransferred,
+						param);
+				}
+				winClient->CallWindowRecv();
+				break;
+			case IO_WRITE:
+				winClient->Sended(bytesTransferred);
+				break;
+			default:
+				break;
+			}
+
 		}
 	}
 
-#endif
+	void TCPServer::ProcessError(void* ptr)
+	{
+		auto lpHandleData = (IOCP_HANDLER*)ptr;
+		lpHandleData->conn->Close();
+		std::shared_ptr<void> param = this->_dataParam.lock();
+		this->_errCallback(lpHandleData->conn,0, param);
+		delete lpHandleData;
+	}
+
 
 }
+#endif

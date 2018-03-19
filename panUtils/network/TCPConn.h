@@ -1,6 +1,7 @@
 #pragma once
 #include <memory>
 #include <string>
+#include "SocketFunc.h"
 #include "../thread/Locker.h"
 #include "../structs/RingBuffer.h"
 #include "../structs/DataPacket.h"
@@ -10,13 +11,17 @@ namespace panutils {
 	class TCPServer;
 
 	//typedef  void (*TCPConnReleaseFunc)(void *param);
-	class basePanObj
+#ifdef WINDOW_SYSTEM
+	struct PER_IO_DATA
 	{
-	public:
-		basePanObj();
-		virtual~basePanObj() ;
-
+		static const int IOCP_RECV_SIZE = 4096;
+		OVERLAPPED overlapped;
+		WSABUF wsaBuf;
+		char buf[IOCP_RECV_SIZE];
+		int len;
 	};
+#endif // WINDOW_SYSTEM
+
 
 	class TCPConn
 	{
@@ -30,7 +35,7 @@ namespace panutils {
 		/*
 		for iocp ,send end,only called by iocp server
 		*/
-		//void Sended(int size);
+		void Sended(int size);
 		/*
 		user rewrite it, self process data,not use cache and ReadData func
 		*/
@@ -51,7 +56,7 @@ namespace panutils {
 		called by server
 		*/
 		void EnableWrite(bool enable);
-		std::shared_ptr<basePanObj> _usrObj = nullptr;
+
 		std::string ID();
 		/*void * _usrData = nullptr;
 		TCPConnReleaseFunc	_releasefunc = nullptr;*/

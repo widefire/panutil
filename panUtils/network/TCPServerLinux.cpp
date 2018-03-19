@@ -3,9 +3,12 @@
 #include "SocketFunc.h"
 #include <iostream>
 
+#ifndef WINDOW_SYSTEM
+
+#include "TCPConnLinux.h"
+
 namespace panutils {
 
-#ifndef WINDOW_SYSTEM
 
 	int TCPServer::Start()
 	{
@@ -14,7 +17,7 @@ namespace panutils {
 		iocp use thread and task list
 		epoll not
 		*/
-		
+
 		std::cout << __FILE__ << __LINE__ << " begin loop" << std::endl;
 		std::thread loopThread(std::mem_fun(&TCPServer::EpollLoop), this);
 		_threadEpoll = std::move(loopThread);
@@ -25,7 +28,7 @@ namespace panutils {
 	void TCPServer::EpollLoop() {
 		_epfd = epoll_create1(0);
 		if (-1 == _epfd) {
-			return ;
+			return;
 		}
 
 		const int EPOLL_MAX_EVENT = 128;
@@ -36,7 +39,7 @@ namespace panutils {
 		ev.events = EPOLLIN | EPOLLET;
 		auto ret = epoll_ctl(_epfd, EPOLL_CTL_ADD, _fd, &ev);
 		if (-1 == ret) {
-			return ;
+			return;
 		}
 		_endLoop = false;
 		int nfds;
@@ -66,10 +69,11 @@ namespace panutils {
 					close connect
 					*/
 					std::cout << __LINE__ << "err " << events[i].data.fd << std::endl;
-					CloseFd(events[i].data.fd);
+					CloseClient(events[i].data.fd);
+
 					epoll_ctl(_epfd, EPOLL_CTL_DEL, events[i].data.fd, 0);
 				}
-				else if(events[i].data.fd==_fd){
+				else if (events[i].data.fd == _fd) {
 					std::cout << __LINE__ << "new conn" << std::endl;
 					/*
 					new connect
@@ -92,7 +96,8 @@ namespace panutils {
 						ev.data.fd = infd;
 						ev.events = EPOLLET | EPOLLIN | EPOLLOUT;
 						epoll_ctl(_epfd, EPOLL_CTL_ADD, infd, &ev);
-						NewFd(infd,hbuf,atoi(sbuf));
+
+						this->NewClient(infd);
 						break;
 					}
 				}
@@ -101,30 +106,31 @@ namespace panutils {
 					read data or close connect
 					*/
 					std::cout << __LINE__ << " in" << events[i].data.fd << std::endl;
-					auto errcode = 0,ret=0;
+					auto errcode = 0, ret = 0;
 					while (true) {
 						ret = SocketRecv(events[i].data.fd, recvBuf, EPOLL_RECV_SIZE, errcode);
 						if (ret > 0) {
-							NewData(events[i].data.fd, (unsigned char*)recvBuf, ret);
+							this->NewData(events[i].data.fd, (unsigned char*)recvBuf, ret);
 						}
 						else if (ret < 0 && (errcode == E_SOCKET_WOULDBLOCK ||
 							errcode == E_SOCKET_INTR || errcode == E_SOCKET_AGAIN ||
-							errcode == E_SOCKET_INPROGRESS||errcode== E_SOCKET_NOBUFS))
+							errcode == E_SOCKET_INPROGRESS || errcode == E_SOCKET_NOBUFS))
 						{
 							break;
 						}
-						else  {
-							CloseFd(events[i].data.fd);
+						else {
+							CloseClient(events[i].data.fd);
 							epoll_ctl(_epfd, EPOLL_CTL_DEL, events[i].data.fd, 0);
 							break;
 						}
 					}
-					
+
 
 				}
 				else if (events[i].events&EPOLLOUT) {
-					std::cout << __LINE__ << " out" << std::endl;
-					EnableWrite(events[i].data.fd);
+					//std::cout << __LINE__ << " out" << std::endl;
+					Sended(events[i].data.fd);
+
 				}
 			}
 		}
@@ -144,49 +150,77 @@ namespace panutils {
 		return 0;
 	}
 
-	void TCPServer::EnableWrite(int fd)
+	void TCPServer::CloseClient(int fd)
 	{
-		auto it = _mapConn.find(fd);
-		if (it != _mapConn.end()) {
-			it->second->EnableWrite(true);
-		}
-	}
-
-	void TCPServer::NewFd(int fd, std::string addr, int port)
-	{
-		std::shared_ptr<TCPConn> conn(new TCPConn(fd));
 		auto it = _mapConn.find(fd);
 		if (it != _mapConn.end())
 		{
 			it->second->Close();
+			_mapConn.erase(fd);
+
 		}
+		else
+		{
+			panutils::CloseSocket(fd);
+		}
+	}
+
+	void TCPServer::NewClient(int fd)
+	{
+		auto it = _mapConn.find(fd);
+		if (it != _mapConn.end())
+		{
+			std::cout << "new client has existed" << std::endl;
+			it->second->Close();
+		}
+		auto conn = ITCPConn::CreateConn(fd);
 		_mapConn[fd] = conn;
-		/*
-		notify
-		*/
-		OnNewConn(conn);
+		this->_dataCallback(it->second, nullptr, 0, _dataParam.lock());
 	}
 
-	void TCPServer::CloseFd(int fd) {
+	void TCPServer::NewData(int fd, const char * data, int size)
+	{
 		auto it = _mapConn.find(fd);
 		if (it != _mapConn.end())
 		{
-			it->second->Close();
-			_mapConn.erase(it);
+			auto conn = dynamic_cast<TCPConnLinux*>(it->second.get());
+			if (conn != nullptr)
+			{
+				this->_dataCallback(it->second, data, size, _dataParam.lock());
+			}
+			else
+			{
+				std::cout << "cast NewData error" << std::endl;
+			}
 		}
-		else {
-			SocketClose(fd);
+		else
+		{
+			std::cout << "NewData err" << std::endl;
 		}
 	}
-	void TCPServer::NewData(int fd, unsigned char *data, int size) {
+
+	void TCPServer::Sended(int fd)
+	{
 		auto it = _mapConn.find(fd);
 		if (it != _mapConn.end())
 		{
-			//it->second->Recved(data, size);
-			this->OnNewData(it->second, data, size);
+			auto conn = dynamic_cast<TCPConnLinux*>(it->second.get());
+			if (conn != nullptr)
+			{
+				conn->EnableWrite();
+			}
+			else
+			{
+				std::cout << "cast sended error" << std::endl;
+			}
+		}
+		else
+		{
+			std::cout << "sended err" << std::endl;
 		}
 	}
+
+}
 #endif // !WINDOW_SYSTEM
 
 	
-}

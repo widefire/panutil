@@ -17,6 +17,8 @@ aux_source_directory(. DIR_SRCS)
 add_subdirectory(panUtils/thread)
 add_subdirectory(panUtils/structs)
 add_subdirectory(panUtils/network)
+add_subdirectory(panUtils/log4p)
+add_subdirectory(panUtils/baseUtils)
 
 file(GLOB_RECURSE CURRENT_HEADERS  *.h *.hpp)
 source_group("Include" FILES ${CURRENT_HEADERS})
@@ -25,7 +27,7 @@ add_executable(Demo ${DIR_SRCS} ${CURRENT_HEADERS})
 
 #添加链接库
 IF (CMAKE_SYSTEM_NAME MATCHES "Linux") 
-TARGET_LINK_LIBRARIES(Demo  pthread panutils_thread panutils_structs panutils_network)
+TARGET_LINK_LIBRARIES(Demo  pthread panutils_thread panutils_structs panutils_network panutils_log4p panutils_utils)
 else()
-TARGET_LINK_LIBRARIES(Demo  panutils_thread panutils_structs panutils_network)
+TARGET_LINK_LIBRARIES(Demo  panutils_thread panutils_structs panutils_network panutils_log4p panutils_utils)
 ENDIF ()  

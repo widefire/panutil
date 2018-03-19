@@ -50,6 +50,10 @@ namespace panutils {
 		return size;
 	}
 
+	void TCPConn::Sended(int size)
+	{
+	}
+
 	//void TCPConn::Sended(int size)
 	//{
 	//	if (size>0)
@@ -199,12 +203,5 @@ namespace panutils {
 	}
 	
 
-	basePanObj::basePanObj()
-	{
-	}
-
-	basePanObj::~basePanObj()
-	{
-	}
 
 }

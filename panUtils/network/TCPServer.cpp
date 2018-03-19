@@ -1,4 +1,6 @@
 #include "TCPServer.h"
+#include "TCPServer.h"
+#include "TCPServer.h"
 #include "SocketFunc.h"
 
 namespace panutils {
@@ -34,20 +36,18 @@ namespace panutils {
 		return 0;
 	}
 
-	void TCPServer::OnNewConn(std::shared_ptr<TCPConn> conn)
+	void TCPServer::SetDataCallback(ITCP_DATA_CALLBACK callback, std::shared_ptr<void> param)
 	{
-		//do nothing here
+		_dataParam = param;
+		_dataCallback = callback;
 	}
 
-
-	void TCPServer::OnErr(std::shared_ptr<TCPConn> conn, int err)
+	void TCPServer::SetErrCallback(ITCP_ERR_CALLBACK callback, std::shared_ptr<void> param)
 	{
-		//do nothing here
+		_errParam = param;
+		_errCallback = callback;
 	}
 
-	void TCPServer::OnNewData(std::shared_ptr<TCPConn> conn, unsigned char * data, int size)
-	{
-	}
 
 
 
