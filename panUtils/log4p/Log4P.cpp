@@ -232,6 +232,11 @@ namespace panLogger
 				_bufCur = 0;
 			}
 
+			_thFlush = new std::thread(&Log4p::FlushLoop, this);
+			if (nullptr==_thFlush)
+			{
+				break;
+			}
 			bRet = true;
 		} while (0);
 		if (!bRet)
@@ -252,6 +257,16 @@ namespace panLogger
 			}
 			delete _thWrite;
 			_thWrite = nullptr;
+		}
+		if (_thFlush!=nullptr)
+		{
+			_conFlush.notify_one();
+			if (_thFlush->joinable())
+			{
+				_thFlush->join();
+			}
+			delete _thFlush;
+			_thFlush = nullptr;
 		}
 		if (nullptr!=_fp)
 		{
@@ -325,15 +340,15 @@ namespace panLogger
 		if (_writeFile&&file)
 		{
 			auto begin = file + strlen(file);
-			while (true)
+			while (begin>file)
 			{
 				if (*begin=='\\'||*begin=='/')
 				{
+					begin++;
 					break;
 				}
 				begin--;
 			}
-			begin++;
 			strcat(pkt.data, begin);
 			strcat(pkt.data, ":");
 		}
@@ -424,6 +439,19 @@ namespace panLogger
 			auto pkt = _listDataPacket.front();
 			_listDataPacket.pop_front();
 			this->AddToSendBuf(pkt.data, pkt.size);
+		}
+	}
+	void Log4p::FlushLoop()
+	{
+		while (!_endLog)
+		{
+			std::unique_lock<std::mutex> lk(_mtxWrite);
+			auto waited = _conFlush.wait_for(lk, std::chrono::seconds(60), [this] {return this->_endLog;});
+			if (!waited)
+			{
+				AddToSendBuf(nullptr, 0);
+				fflush(_fp);
+			}
 		}
 	}
 	void Log4p::AddToSendBuf(char * data, int size)

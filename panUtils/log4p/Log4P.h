@@ -70,6 +70,7 @@ namespace panLogger
 		std::string GetTimeStr();
 		std::string GetLogTimeFmtStr();
 		void WriteLoop();
+		void FlushLoop();
 		void AddToSendBuf(char *data, int size);
 	private:
 		struct LogPacket
@@ -87,6 +88,10 @@ namespace panLogger
 		std::condition_variable _conWrite;
 		std::list<LogPacket>	_listDataPacket;
 		std::mutex				_mtxWrite;
+
+		std::thread *_thFlush = nullptr;
+		std::condition_variable _conFlush;
+		std::mutex				_mtxFlush;
 		
 		char	*_sendBuf = nullptr;
 		int		_bufCur = 0;

@@ -60,6 +60,8 @@ namespace panutils {
 	int SocketSend(int fd, const char *buf, int len, int &err, bool block = false);
 	int SocketRecv(int fd, char *buf, int len, int &err, bool block = false);
 
+	int SocketSendAll(int fd, const char *buf, int len, int &err);
+
 	int SocketClientTCP(const char* hostname, int port);
 	int SocketClientUDP();
 	int SocketBufSize(int fd, bool bsend);
