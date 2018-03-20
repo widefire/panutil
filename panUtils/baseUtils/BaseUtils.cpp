@@ -253,11 +253,12 @@ namespace panutils {
 		}
 		auto conv = iconv_open("", "UTF-8");
 		std::shared_ptr<std::vector<char>>	out(new std::vector<char>);
-		size_t sinputLen=(size_t)intpuLen;
+		size_t sinputLen=(size_t)inputLen;
 		size_t outputLen = sinputLen << 1;
 		out->resize(outputLen, 0);
 		char* pOut=(char*)out->data();
-		auto ret = iconv(conv, &input, &sinputLen, &pOut, &outputLen);
+		char* pIn=(char*)input;
+		auto ret = iconv(conv, &pIn, &sinputLen, &pOut, &outputLen);
 		if (ret==-1)
 		{
 			out = nullptr;
