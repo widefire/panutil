@@ -46,13 +46,15 @@ namespace panLogger
 		// TODO: 在此处插入 return 语句
 		if (sizeof(param)==4)
 		{
-			int ptr = (int)(param);
+			int ptr = 0;
+			memcpy(&ptr,param,sizeof(int));
 			auto strParam = std::to_string(ptr) + " ";
 			this->AddBuf(strParam.data(), (int)strParam.size());
 		}
 		else
 		{
-			auto ptr = (long long)(param);
+			long long ptr=0;
+			memcpy(&ptr,param,sizeof(long long));
 			auto strParam = std::to_string(ptr) + " ";
 			this->AddBuf(strParam.data(), (int)strParam.size());
 		}
