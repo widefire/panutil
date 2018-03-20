@@ -84,10 +84,7 @@ namespace panutils {
 						if (infd < 0) {
 							break;
 						}
-						auto iRet = getnameinfo(&inAddr, addrLen,
-							hbuf, sizeof hbuf,
-							sbuf, sizeof sbuf,
-							NI_NUMERICHOST | NI_NUMERICSERV);
+						
 						
 						SetSocketNoBlocking(infd, false);
 						ev.data.fd = infd;
