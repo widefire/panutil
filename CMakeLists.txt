@@ -5,7 +5,7 @@ cmake_minimum_required (VERSION 2.8)
 project (panutil)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
-
+set (PROJECTNAME_ARCHITECTURE "x64")
 # 查找当前目录下的所有源文件
 # 并将名称保存到 DIR_SRCS 变量
 aux_source_directory(. DIR_SRCS)
