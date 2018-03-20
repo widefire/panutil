@@ -98,7 +98,7 @@ namespace panutils {
 							auto client = it->second;
 							char hostname[NI_MAXHOST];
 							char servInfo[NI_MAXSERV];
-							getnameinfo((const struct sockaddr *)&addrRemote, addrLen,
+							getnameinfo((const struct sockaddr *)&inAddr, addrLen,
 								hostname,
 								NI_MAXHOST, servInfo, NI_MAXSERV, NI_NUMERICSERV);
 							client->hostname = hostname;
