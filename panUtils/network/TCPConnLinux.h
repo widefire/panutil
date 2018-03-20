@@ -11,8 +11,8 @@ namespace panutils
 	public:
 		TCPConnLinux(int fd);
 		virtual ~TCPConnLinux();
-		virtual int Send(const char *data, const int size) __override;
-		virtual void Close() __override;
+		virtual int Send(const char *data, const int size) override;
+		virtual void Close() override;
 		void	EnableWrite();
 	private:
 		void SendLinux();
