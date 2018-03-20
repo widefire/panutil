@@ -104,7 +104,7 @@ namespace panutils {
 								NI_MAXHOST, servInfo, NI_MAXSERV, NI_NUMERICSERV);
 							client->hostname = hostname;
 
-							struct sockaddr_in *ipv4 = &inAddr;
+							struct sockaddr_in *ipv4 = (sockaddr_in*)&inAddr;
 							char ipAddress[INET_ADDRSTRLEN];
 							inet_ntop(AF_INET, &(ipv4->sin_addr), ipAddress, INET_ADDRSTRLEN);
 							client->remoteAddr = ipAddress;
