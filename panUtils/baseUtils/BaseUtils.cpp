@@ -255,7 +255,8 @@ namespace panutils {
 		std::shared_ptr<std::vector<char>>	out(new std::vector<char>);
 		size_t outputLen = inputLen << 1;
 		out->resize(outputLen, 0);
-		auto ret = iconv(conv, &input, &inputLen, &out->data(), &outputLen);
+		auto pOut=out->data();
+		auto ret = iconv(conv, &input, &inputLen, &pOut, &outputLen);
 		if (ret==-1)
 		{
 			out = nullptr;
