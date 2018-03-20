@@ -15,11 +15,11 @@ namespace panutils {
 	//HANDLE hCompletion;
 	int TCPServer::Start()
 	{
-		auto tmpHandle= CreateIoCompletionPort(INVALID_HANDLE_VALUE, nullptr, 0, 0);
+		auto tmpHandle = CreateIoCompletionPort(INVALID_HANDLE_VALUE, nullptr, 0, 0);
 		_hICompletionPort = new HANDLE;
 		memcpy(_hICompletionPort, &tmpHandle, sizeof(HANDLE));
 		_endLoop = false;
-		
+
 		_threadIocp = std::move(std::thread(&TCPServer::IocpLoop, this));
 
 		return 0;
@@ -28,7 +28,7 @@ namespace panutils {
 	int TCPServer::Stop()
 	{
 		_endLoop = true;
-		if (_hICompletionPort!=nullptr)
+		if (_hICompletionPort != nullptr)
 		{
 			CloseHandle(*(HANDLE*)_hICompletionPort);
 			delete (HANDLE*)_hICompletionPort;
@@ -54,12 +54,12 @@ namespace panutils {
 			recvWorkers.push_back(std::move(std::thread(&TCPServer::RecvWorker, this, _hICompletionPort)));
 		}
 
-		while (_endLoop==false)
+		while (_endLoop == false)
 		{
 			SOCKADDR_IN	addrRemote;
 			int addrLen = sizeof(addrRemote);
 			auto infd = accept(_fd, (sockaddr*)&addrRemote, &addrLen);
-			if (infd==-1)
+			if (infd == -1)
 			{
 				std::this_thread::sleep_for(std::chrono::milliseconds(10));
 				continue;
@@ -86,14 +86,14 @@ namespace panutils {
 
 			CreateIoCompletionPort((HANDLE)infd, (*(HANDLE*)_hICompletionPort), (ULONG_PTR)handleData, 0);
 			auto param = this->_dataParam.lock();
-			if (param!=nullptr)
+			if (param != nullptr)
 			{
 				this->_dataCallback(handleData->conn, nullptr, 0,
 					param);
 			}
 
 			winClient->CallWindowRecv();
-			
+
 		}
 
 
@@ -109,7 +109,7 @@ namespace panutils {
 
 	void TCPServer::RecvWorker(void * lpParam)
 	{
-		if (nullptr==lpParam)
+		if (nullptr == lpParam)
 		{
 			return;
 		}
@@ -123,38 +123,40 @@ namespace panutils {
 
 		while (!_endLoop)
 		{
-			iRet = GetQueuedCompletionStatus(completionPort, &bytesTransferred, 
+			iRet = GetQueuedCompletionStatus(completionPort, &bytesTransferred,
 				(PULONG_PTR)&lpHandleData,
 				(LPOVERLAPPED*)&lpOverlapped, INFINITE);
-
+			IOCP_IO_DATA* iodata = nullptr;
 			std::shared_ptr<void> param = this->_dataParam.lock();
-			if (0==iRet)
+			if (lpOverlapped != nullptr)
 			{
-				if (lpHandleData!=nullptr)
-				{
-					this->ProcessError(lpHandleData);
-				}
+				iodata = (IOCP_IO_DATA*)CONTAINING_RECORD(lpOverlapped, IOCP_IO_DATA, overlapped);
+			}
+			if (0 == iRet)
+			{
 				continue;
 			}
 
-			auto iodata=(IOCP_IO_DATA*)CONTAINING_RECORD(lpOverlapped, IOCP_IO_DATA, overlapped);
-			if (0==bytesTransferred)
+
+			if (0 == bytesTransferred)
 			{
 				this->ProcessError(lpHandleData);
+				lpHandleData = nullptr;
 				continue;
 			}
 
 			auto winClient = dynamic_cast<TCPConnWindows*>(lpHandleData->conn.get());
-			if (winClient==nullptr)
+			if (winClient == nullptr)
 			{
 				this->ProcessError(lpHandleData);
+				lpHandleData = nullptr;
 				continue;
 			}
 
 			switch (iodata->ioType)
 			{
 			case IO_READ:
-				if (param!=nullptr)
+				if (param != nullptr)
 				{
 					this->_dataCallback(lpHandleData->conn, winClient->Buf(), bytesTransferred,
 						param);
@@ -176,7 +178,7 @@ namespace panutils {
 		auto lpHandleData = (IOCP_HANDLER*)ptr;
 		lpHandleData->conn->Close();
 		auto param = this->_dataParam.lock();
-		if (param!=nullptr)
+		if (param != nullptr)
 		{
 			this->_errCallback(lpHandleData->conn, 0, param);
 		}

@@ -51,7 +51,7 @@ namespace panutils {
 		void IocpLoop();
 		void RecvWorker(void *lpParam);
 		void ProcessError(void* lpHandleData);
-		void* _hICompletionPort;
+		void* _hICompletionPort = nullptr;
 #endif // _
 
 	private:
