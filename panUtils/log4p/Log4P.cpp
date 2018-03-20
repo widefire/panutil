@@ -43,16 +43,16 @@ namespace panLogger
 	}
 	Log4pStream & Log4pStream::operator<<(const void *param)
 	{
-		// TODO: ÔÚ´Ë´¦²åÈë return Óï¾ä
+		// TODO: åœ¨æ­¤å¤„æ’å…¥ return è¯­å¥
 		if (sizeof(param)==4)
 		{
-			int ptr = reinterpret_cast<int>(param);
+			int ptr = (int)(param);
 			auto strParam = std::to_string(ptr) + " ";
 			this->AddBuf(strParam.data(), (int)strParam.size());
 		}
 		else
 		{
-			auto ptr = reinterpret_cast<long long>(param);
+			auto ptr = (long long)(param);
 			auto strParam = std::to_string(ptr) + " ";
 			this->AddBuf(strParam.data(), (int)strParam.size());
 		}
@@ -60,7 +60,7 @@ namespace panLogger
 	}
 	Log4pStream & Log4pStream::operator<<(const char *param)
 	{
-		// TODO: ÔÚ´Ë´¦²åÈë return Óï¾ä
+		// TODO: åœ¨æ­¤å¤„æ’å…¥ return è¯­å¥
 		std::string strParam = param;
 		strParam += +" ";
 		this->AddBuf(strParam.data(), (int)strParam.size());
@@ -68,7 +68,7 @@ namespace panLogger
 	}
 	Log4pStream & Log4pStream::operator<<(const unsigned char *param)
 	{
-		// TODO: ÔÚ´Ë´¦²åÈë return Óï¾ä
+		// TODO: åœ¨æ­¤å¤„æ’å…¥ return è¯­å¥
 		std::string strParam = (char*)param;
 		strParam += " ";
 		this->AddBuf(strParam.data(), (int)strParam.size());
@@ -76,84 +76,84 @@ namespace panLogger
 	}
 	Log4pStream & Log4pStream::operator<<(const std::string param)
 	{
-		// TODO: ÔÚ´Ë´¦²åÈë return Óï¾ä
+		// TODO: åœ¨æ­¤å¤„æ’å…¥ return è¯­å¥
 		this->AddBuf(param.data(), (int)param.size());
 		this->AddBuf(" ", 1);
 		return *this;
 	}
 	Log4pStream & Log4pStream::operator<<(const bool param)
 	{
-		// TODO: ÔÚ´Ë´¦²åÈë return Óï¾ä
+		// TODO: åœ¨æ­¤å¤„æ’å…¥ return è¯­å¥
 		std::string strParam = param ? "true " : "false ";
 		this->AddBuf(strParam.data(), (int)strParam.size());
 		return *this;
 	}
 	Log4pStream & Log4pStream::operator<<(const char param)
 	{
-		// TODO: ÔÚ´Ë´¦²åÈë return Óï¾ä
+		// TODO: åœ¨æ­¤å¤„æ’å…¥ return è¯­å¥
 		auto strParam = std::to_string(param) + " ";
 		this->AddBuf(strParam.data(), (int)strParam.size());
 		return *this;
 	}
 	Log4pStream & Log4pStream::operator<<(const unsigned char param)
 	{
-		// TODO: ÔÚ´Ë´¦²åÈë return Óï¾ä
+		// TODO: åœ¨æ­¤å¤„æ’å…¥ return è¯­å¥
 		auto strParam = std::to_string(param) + " ";
 		this->AddBuf(strParam.data(), (int)strParam.size());
 		return *this;
 	}
 	Log4pStream & Log4pStream::operator<<(const short param)
 	{
-		// TODO: ÔÚ´Ë´¦²åÈë return Óï¾ä
+		// TODO: åœ¨æ­¤å¤„æ’å…¥ return è¯­å¥
 		auto strParam = std::to_string(param) + " ";
 		this->AddBuf(strParam.data(), (int)strParam.size());
 		return *this;
 	}
 	Log4pStream & Log4pStream::operator<<(const unsigned short param)
 	{
-		// TODO: ÔÚ´Ë´¦²åÈë return Óï¾ä
+		// TODO: åœ¨æ­¤å¤„æ’å…¥ return è¯­å¥
 		auto strParam = std::to_string(param) + " ";
 		this->AddBuf(strParam.data(), (int)strParam.size());
 		return *this;
 	}
 	Log4pStream & Log4pStream::operator<<(const int param)
 	{
-		// TODO: ÔÚ´Ë´¦²åÈë return Óï¾ä
+		// TODO: åœ¨æ­¤å¤„æ’å…¥ return è¯­å¥
 		auto strParam = std::to_string(param) + " ";
 		this->AddBuf(strParam.data(), (int)strParam.size());
 		return *this;
 	}
 	Log4pStream & Log4pStream::operator<<(const unsigned int param)
 	{
-		// TODO: ÔÚ´Ë´¦²åÈë return Óï¾ä
+		// TODO: åœ¨æ­¤å¤„æ’å…¥ return è¯­å¥
 		auto strParam = std::to_string(param) + " ";
 		this->AddBuf(strParam.data(), (int)strParam.size());
 		return *this;
 	}
 	Log4pStream & Log4pStream::operator<<(const long long param)
 	{
-		// TODO: ÔÚ´Ë´¦²åÈë return Óï¾ä
+		// TODO: åœ¨æ­¤å¤„æ’å…¥ return è¯­å¥
 		auto strParam = std::to_string(param) + " ";
 		this->AddBuf(strParam.data(), (int)strParam.size());
 		return *this;
 	}
 	Log4pStream & Log4pStream::operator<<(const unsigned long long param)
 	{
-		// TODO: ÔÚ´Ë´¦²åÈë return Óï¾ä
+		// TODO: åœ¨æ­¤å¤„æ’å…¥ return è¯­å¥
 		auto strParam = std::to_string(param) + " ";
 		this->AddBuf(strParam.data(), (int)strParam.size());
 		return *this;
 	}
 	Log4pStream & Log4pStream::operator<<(const float param)
 	{
-		// TODO: ÔÚ´Ë´¦²åÈë return Óï¾ä
+		// TODO: åœ¨æ­¤å¤„æ’å…¥ return è¯­å¥
 		auto strParam = std::to_string(param) + " ";
 		this->AddBuf(strParam.data(), (int)strParam.size());
 		return *this;
 	}
 	Log4pStream & Log4pStream::operator<<(const double param)
 	{
-		// TODO: ÔÚ´Ë´¦²åÈë return Óï¾ä
+		// TODO: åœ¨æ­¤å¤„æ’å…¥ return è¯­å¥
 		auto strParam = std::to_string(param) + " ";
 		this->AddBuf(strParam.data(), (int)strParam.size());
 		return *this;
@@ -180,7 +180,7 @@ namespace panLogger
 	}
 	Log4p & Log4p::Instance()
 	{
-		// TODO: ÔÚ´Ë´¦²åÈë return Óï¾ä
+		// TODO: åœ¨æ­¤å¤„æ’å…¥ return è¯­å¥
 		static Log4p slog;
 		return slog;
 	}
@@ -209,7 +209,7 @@ namespace panLogger
 			#ifdef WINDOW_SYSTEM
 				_mkdir(_dir.c_str());
 			#else
-				iRet = mkdir(dirName, 0777);
+				auto iRet = mkdir(_dir.c_str(), 0777);
 			#endif // WINDOW_SYSTEM
 			
 				fullName += this->_fileName + this->GetTimeStr() + ".log";
@@ -394,7 +394,7 @@ namespace panLogger
 		char buf[100];
 		auto now = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
 		std::strftime(buf, 100, "%Y%M%d_%H%M%S_", std::localtime(&now));
-		std::chrono::milliseconds;
+		
 		int mill=(int)(std::chrono::system_clock::now().time_since_epoch() / std::chrono::milliseconds(1))%1000;
 		strcat(buf, std::to_string(mill).data());
 		std::string strRet = buf;
@@ -405,7 +405,7 @@ namespace panLogger
 		char buf[100];
 		auto now = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
 		std::strftime(buf, 100, "%Y-%m-%d %H:%M:%S:", std::localtime(&now));
-		std::chrono::milliseconds;
+		
 		int mill = (int)(std::chrono::system_clock::now().time_since_epoch() / std::chrono::milliseconds(1)) % 1000;
 		sprintf(buf, "%s%d ", buf, mill);
 		std::string strRet = buf;
