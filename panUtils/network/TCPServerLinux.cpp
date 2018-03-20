@@ -4,6 +4,7 @@
 #include <iostream>
 
 #ifndef WINDOW_SYSTEM
+#include <arpa/inet.h>
 
 #include "TCPConnLinux.h"
 
@@ -103,7 +104,7 @@ namespace panutils {
 								NI_MAXHOST, servInfo, NI_MAXSERV, NI_NUMERICSERV);
 							client->hostname = hostname;
 
-							struct sockaddr_in *ipv4 = &addrRemote;
+							struct sockaddr_in *ipv4 = &inAddr;
 							char ipAddress[INET_ADDRSTRLEN];
 							inet_ntop(AF_INET, &(ipv4->sin_addr), ipAddress, INET_ADDRSTRLEN);
 							client->remoteAddr = ipAddress;
@@ -122,7 +123,7 @@ namespace panutils {
 					while (true) {
 						ret = SocketRecv(events[i].data.fd, recvBuf, EPOLL_RECV_SIZE, errcode);
 						if (ret > 0) {
-							this->NewData(events[i].data.fd, (unsigned char*)recvBuf, ret);
+							this->NewData(events[i].data.fd, (const char*)recvBuf, ret);
 						}
 						else if (ret < 0 && (errcode == E_SOCKET_WOULDBLOCK ||
 							errcode == E_SOCKET_INTR || errcode == E_SOCKET_AGAIN ||
