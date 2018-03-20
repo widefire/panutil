@@ -1,4 +1,5 @@
 #include "BaseUtils.h"
+#include <string.h>
 
 namespace panutils {
 
