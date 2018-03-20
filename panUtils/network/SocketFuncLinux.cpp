@@ -168,7 +168,7 @@ int SocketClientUDP() {
 
 int SocketBufSize(int fd, bool bsend) {
 	int bufSize;
-	int sizeSize = sizeof(bufSize);
+	socklen_t sizeSize = sizeof(bufSize);
 	auto opt = bsend ? SO_SNDBUF : SO_RCVBUF;
 	getsockopt(fd, SOL_SOCKET, SO_RCVBUF, (char*)&bufSize, &sizeSize);
 	if (bufSize<1500)
