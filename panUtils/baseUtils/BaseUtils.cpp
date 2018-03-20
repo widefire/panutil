@@ -306,7 +306,7 @@ namespace panutils {
 		out->resize(outputLen, 0);
 		char *pOut=out->data();
 		char *pIn=(char*)input;
-		auto ret = iconv(conv, &pIn, &sinputLen, &pOut &outputLen);
+		auto ret = iconv(conv, &pIn, &sinputLen, &pOut, &outputLen);
 		if (ret == -1)
 		{
 			out = nullptr;
