@@ -27,7 +27,7 @@ namespace panutils
 		{
 			return -1;
 		}
-		if (!_sending)
+		if (_writeable)
 		{
 			this->SendLinux();
 		}
@@ -56,26 +56,48 @@ namespace panutils
 		}
 		else
 		{
-			_sending = false;
+			_writeable = true;
 		}
 	}
 	void TCPConnLinux::SendLinux()
 	{
-		_sending = true;
 		int size = _sendBuf.CanRead();
 		if (size>0)
 		{
 
 			auto data = _sendBuf.GetPtr(size, size);
 			int err;
-			auto ret=panutils::SocketSend(_fd, (const char*)data, size,err);
+			auto ret = panutils::SocketSend(_fd, (const char*)data, size, err);
 			if (ret>0)
 			{
 				_sendBuf.Ignore(ret);
 			}
 			else
 			{
-				_sending = true;
+				_writeable = false;
+			}
+		}
+
+		static const int SEND_SIZE = 1024;
+		while (true)
+		{
+
+			int size = _sendBuf.CanRead() < SEND_SIZE ? _sendBuf.CanRead() : SEND_SIZE;
+			if (size<=0)
+			{
+				break;
+			}
+			auto data = _sendBuf.GetPtr(size, size);
+			int err = 0;
+			auto ret = panutils::SocketSend(_fd, (const char*)data, size, err);
+			if (ret>0)
+			{
+				_sendBuf.Ignore(ret);
+			}
+			else
+			{
+				_writeable = false;
+				break;
 			}
 		}
 	}

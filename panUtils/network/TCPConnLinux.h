@@ -20,7 +20,7 @@ namespace panutils
 		std::mutex	_mutex;
 		int _fd = -1;
 		RingBuffer _sendBuf;
-		bool _sending = false;
+		bool _writeable = true;
 	};
 }
 

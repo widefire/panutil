@@ -19,6 +19,8 @@ namespace panutils
 		virtual int Send(const char *data, const int size) = 0 ;
 		virtual void Close() = 0;
 		std::string	remoteAddr;
+		int port = 0;
+		std::string hostname;
 	};
 
 }

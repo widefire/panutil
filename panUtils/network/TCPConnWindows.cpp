@@ -101,7 +101,10 @@ namespace panutils {
 		DWORD bytesSend = size;
 		DWORD sendFlags = 0;
 
-		_sendBuf.Read((unsigned char*)_sendOverlapped->buf, size);
+		//_sendBuf.Read((unsigned char*)_sendOverlapped->buf, size);
+		auto ptr = _sendBuf.GetPtr(size, size);
+		memcpy(_sendOverlapped->wsaBuf.buf, ptr, size);
+		_sendOverlapped->wsaBuf.len = size;
 		WSASend(_fd,&_sendOverlapped->wsaBuf,1,
 			&bytesSend,sendFlags,
 			&_sendOverlapped->overlapped, 0);

@@ -5,6 +5,7 @@
 
 #include	"ITCPConn.h"
 #include "TCPConnWindows.h"
+#include <WS2tcpip.h>
 #include	<chrono>
 
 namespace panutils {
@@ -68,8 +69,20 @@ namespace panutils {
 			auto client = ITCPConn::CreateConn((int)infd);
 			handleData->conn = client;
 			auto winClient = dynamic_cast<TCPConnWindows*>(client.get());
-			
+			{
+				char hostname[NI_MAXHOST];
+				char servInfo[NI_MAXSERV];
+				getnameinfo((const SOCKADDR*)&addrRemote, addrLen,
+					hostname,
+					NI_MAXHOST, servInfo, NI_MAXSERV, NI_NUMERICSERV);
+				client->hostname = hostname;
 
+				struct sockaddr_in *ipv4 = &addrRemote;
+				char ipAddress[INET_ADDRSTRLEN];
+				inet_ntop(AF_INET, &(ipv4->sin_addr), ipAddress, INET_ADDRSTRLEN);
+				client->remoteAddr = ipAddress;
+				client->port = ipv4->sin_port;
+			}
 
 			CreateIoCompletionPort((HANDLE)infd, (*(HANDLE*)_hICompletionPort), (ULONG_PTR)handleData, 0);
 			auto param = this->_dataParam.lock();

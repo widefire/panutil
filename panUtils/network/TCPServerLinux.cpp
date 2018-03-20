@@ -42,7 +42,7 @@ namespace panutils {
 		_endLoop = false;
 		int nfds;
 		char recvBuf[EPOLL_RECV_SIZE];
-		std::cout << __FILE__ << __LINE__ << "begin while" << std::endl;
+
 		while (_endLoop == false) {
 			nfds = epoll_wait(_epfd, events, EPOLL_MAX_EVENT, -1);
 			if (_endLoop)
@@ -58,19 +58,19 @@ namespace panutils {
 				break;
 			}
 			for (int i = 0; i < nfds; i++) {
-				std::cout << __LINE__ << " event " << events[i].events << std::endl;
+
 				if ((events[i].events&EPOLLERR) ||
 					(events[i].events&EPOLLHUP)) {
 					/*
 					close connect
 					*/
-					std::cout << __LINE__ << "err " << events[i].data.fd << std::endl;
+
 					CloseClient(events[i].data.fd);
 
 					epoll_ctl(_epfd, EPOLL_CTL_DEL, events[i].data.fd, 0);
 				}
 				else if (events[i].data.fd == _fd) {
-					std::cout << __LINE__ << "new conn" << std::endl;
+
 					/*
 					new connect
 					*/
@@ -88,12 +88,31 @@ namespace panutils {
 							hbuf, sizeof hbuf,
 							sbuf, sizeof sbuf,
 							NI_NUMERICHOST | NI_NUMERICSERV);
+						
 						SetSocketNoBlocking(infd, false);
 						ev.data.fd = infd;
 						ev.events = EPOLLET | EPOLLIN | EPOLLOUT;
 						epoll_ctl(_epfd, EPOLL_CTL_ADD, infd, &ev);
 
 						this->NewClient(infd);
+						auto it = _mapConn.find(fd);
+						if (it != _mapConn.end())
+						{
+							auto client = it->second;
+							char hostname[NI_MAXHOST];
+							char servInfo[NI_MAXSERV];
+							getnameinfo((const SOCKADDR*)&addrRemote, addrLen,
+								hostname,
+								NI_MAXHOST, servInfo, NI_MAXSERV, NI_NUMERICSERV);
+							client->hostname = hostname;
+
+							struct sockaddr_in *ipv4 = &addrRemote;
+							char ipAddress[INET_ADDRSTRLEN];
+							inet_ntop(AF_INET, &(ipv4->sin_addr), ipAddress, INET_ADDRSTRLEN);
+							client->remoteAddr = ipAddress;
+							client->port = ipv4->sin_port;
+
+						}
 						break;
 					}
 				}
@@ -101,7 +120,7 @@ namespace panutils {
 					/*
 					read data or close connect
 					*/
-					std::cout << __LINE__ << " in" << events[i].data.fd << std::endl;
+
 					auto errcode = 0, ret = 0;
 					while (true) {
 						ret = SocketRecv(events[i].data.fd, recvBuf, EPOLL_RECV_SIZE, errcode);

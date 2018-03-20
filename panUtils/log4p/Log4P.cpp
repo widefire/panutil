@@ -198,7 +198,7 @@ namespace panLogger
 	}
 	bool Log4p::Start()
 	{
-		if (nullptr!=_thWrite||_fp!=nullptr)
+		if (_fp!=nullptr)
 		{
 			return false;
 		}
@@ -220,11 +220,7 @@ namespace panLogger
 			}
 
 			_endLog = false;
-			_thWrite = new std::thread(&Log4p::WriteLoop, this);
-			if (nullptr==_thWrite)
-			{
-				break;
-			}
+			_thWrite = std::move(std::thread(&Log4p::WriteLoop, this));
 
 			if (nullptr==_sendBuf)
 			{
@@ -232,11 +228,8 @@ namespace panLogger
 				_bufCur = 0;
 			}
 
-			_thFlush = new std::thread(&Log4p::FlushLoop, this);
-			if (nullptr==_thFlush)
-			{
-				break;
-			}
+			_thFlush = std::move(std::thread(&Log4p::FlushLoop, this));
+
 			bRet = true;
 		} while (0);
 		if (!bRet)
@@ -248,26 +241,18 @@ namespace panLogger
 	bool Log4p::Stop()
 	{
 		_endLog = true;
-		if (_thWrite!=nullptr)
+		if (_thWrite.joinable())
 		{
 			_conWrite.notify_one();
-			if (_thWrite->joinable())
-			{
-				_thWrite->join();
-			}
-			delete _thWrite;
-			_thWrite = nullptr;
+			_thWrite.join();
 		}
-		if (_thFlush!=nullptr)
+
+		if (_thFlush.joinable())
 		{
 			_conFlush.notify_one();
-			if (_thFlush->joinable())
-			{
-				_thFlush->join();
-			}
-			delete _thFlush;
-			_thFlush = nullptr;
+			_thFlush.join();
 		}
+
 		if (nullptr!=_fp)
 		{
 			/*

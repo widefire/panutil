@@ -84,16 +84,16 @@ namespace panLogger
 		std::string	_dir = "log/";
 		std::string _fileName = "";
 		FILE	*_fp = nullptr;
-		std::thread	*_thWrite = nullptr;
+		std::thread		_thWrite ;
 		std::condition_variable _conWrite;
 		std::list<LogPacket>	_listDataPacket;
 		std::mutex				_mtxWrite;
 
-		std::thread *_thFlush = nullptr;
+		std::thread _thFlush ;
 		std::condition_variable _conFlush;
 		std::mutex				_mtxFlush;
 		
-		char	*_sendBuf = nullptr;
+		char	*_sendBuf =nullptr;
 		int		_bufCur = 0;
 		volatile	bool _endLog = false;
 
