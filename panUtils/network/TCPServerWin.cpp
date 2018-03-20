@@ -18,11 +18,6 @@ namespace panutils {
 		_hICompletionPort = new HANDLE;
 		memcpy(_hICompletionPort, &tmpHandle, sizeof(HANDLE));
 		_endLoop = false;
-		//create a thread to loop 
-		/*
-		iocp use thread and task list
-		epoll not
-		*/
 		
 		_threadIocp = std::move(std::thread(&TCPServer::IocpLoop, this));
 
@@ -70,15 +65,19 @@ namespace panutils {
 			}
 
 			auto handleData = new IOCP_HANDLER();
-			auto client = ITCPConn::CreateConn(infd);
+			auto client = ITCPConn::CreateConn((int)infd);
 			handleData->conn = client;
 			auto winClient = dynamic_cast<TCPConnWindows*>(client.get());
 			
 
 
 			CreateIoCompletionPort((HANDLE)infd, (*(HANDLE*)_hICompletionPort), (ULONG_PTR)handleData, 0);
-			this->_dataCallback(handleData->conn, nullptr, 0,
-				this->_dataParam.lock());
+			auto param = this->_dataParam.lock();
+			if (param!=nullptr)
+			{
+				this->_dataCallback(handleData->conn, nullptr, 0,
+					param);
+			}
 
 			winClient->CallWindowRecv();
 			
@@ -92,10 +91,6 @@ namespace panutils {
 				recvWorkers[i].join();
 			}
 
-			/*if (sendWorkers[i].joinable())
-			{
-				sendWorkers[i].join();
-			}*/
 		}
 	}
 
@@ -167,8 +162,11 @@ namespace panutils {
 	{
 		auto lpHandleData = (IOCP_HANDLER*)ptr;
 		lpHandleData->conn->Close();
-		std::shared_ptr<void> param = this->_dataParam.lock();
-		this->_errCallback(lpHandleData->conn,0, param);
+		auto param = this->_dataParam.lock();
+		if (param!=nullptr)
+		{
+			this->_errCallback(lpHandleData->conn, 0, param);
+		}
 		delete lpHandleData;
 	}
 

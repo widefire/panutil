@@ -22,7 +22,13 @@
 namespace panutils {
 
 
+	/*
+	when data is null,it is new connect
+	*/
 	typedef  std::function<void(std::shared_ptr<ITCPConn> conn,const char*, const int, std::shared_ptr<void> param)> ITCP_DATA_CALLBACK;
+	/*
+	socket error
+	*/
 	typedef  std::function<void(std::shared_ptr<ITCPConn> conn,const int, std::shared_ptr<void> param)> ITCP_ERR_CALLBACK;
 
 	class TCPServer
@@ -59,8 +65,6 @@ namespace panutils {
 		
 		
 #ifdef WINDOW_SYSTEM
-		std::vector<std::map<int,std::shared_ptr<ITCPConn>>> _vecConnPtr;
-		std::vector<std::shared_ptr<RWLock>> _vecConnMtx;
 		int _numThread;//for windows ,mul thread .
 		std::thread _threadIocp;
 #else

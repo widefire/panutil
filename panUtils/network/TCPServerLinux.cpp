@@ -19,9 +19,7 @@ namespace panutils {
 		*/
 
 		std::cout << __FILE__ << __LINE__ << " begin loop" << std::endl;
-		std::thread loopThread(std::mem_fun(&TCPServer::EpollLoop), this);
-		_threadEpoll = std::move(loopThread);
-
+		_threadEpoll = std::move(&TCPServer::EpollLoop, this);
 		return 0;
 	}
 
@@ -52,9 +50,7 @@ namespace panutils {
 				std::cout << __LINE__ << "end loop" << std::endl;
 				break;
 			}
-			/*
-			监听的skocket只需要EpollIn就足够了，EpollErr和EpollHup会自动加上
-			*/
+
 			if (nfds == -1) {
 
 				std::cout << __LINE__ << " nfds " << nfds << std::endl;
@@ -175,7 +171,11 @@ namespace panutils {
 		}
 		auto conn = ITCPConn::CreateConn(fd);
 		_mapConn[fd] = conn;
-		this->_dataCallback(it->second, nullptr, 0, _dataParam.lock());
+		auto param = _dataParam.lock();
+		if (param != nullptr)
+		{
+			this->_dataCallback(it->second, nullptr, 0, _dataParam.lock());
+		}
 	}
 
 	void TCPServer::NewData(int fd, const char * data, int size)
@@ -186,7 +186,11 @@ namespace panutils {
 			auto conn = dynamic_cast<TCPConnLinux*>(it->second.get());
 			if (conn != nullptr)
 			{
-				this->_dataCallback(it->second, data, size, _dataParam.lock());
+				auto param = _dataParam.lock();
+				if (param != nullptr)
+				{
+					this->_dataCallback(it->second, data, size, _dataParam.lock());
+				}
 			}
 			else
 			{

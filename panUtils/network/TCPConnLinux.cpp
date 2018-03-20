@@ -19,6 +19,10 @@ namespace panutils
 			return -1;
 		}
 		std::lock_guard<std::mutex> guard(_mutex);
+		if (_fd<0)
+		{
+			return -1;
+		}
 		if (size!=_sendBuf.Write((unsigned char*)data,size))
 		{
 			return -1;
@@ -42,6 +46,10 @@ namespace panutils
 	void TCPConnLinux::EnableWrite()
 	{
 		std::lock_guard<std::mutex> guard(_mutex);
+		if (_fd<0)
+		{
+			return ;
+		}
 		if (_sendBuf.CanRead()>0)
 		{
 			SendLinux();
