@@ -19,7 +19,7 @@ namespace panutils {
 		*/
 
 		std::cout << __FILE__ << __LINE__ << " begin loop" << std::endl;
-		_threadEpoll = std::move(&TCPServer::EpollLoop, this);
+		_threadEpoll = std::move(std::thread(&TCPServer::EpollLoop, this));
 		return 0;
 	}
 
@@ -92,7 +92,7 @@ namespace panutils {
 						epoll_ctl(_epfd, EPOLL_CTL_ADD, infd, &ev);
 
 						this->NewClient(infd);
-						auto it = _mapConn.find(fd);
+						auto it = _mapConn.find(infd);
 						if (it != _mapConn.end())
 						{
 							auto client = it->second;
