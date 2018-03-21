@@ -8,7 +8,8 @@ source_group("Include" FILES ${CURRENT_HEADERS})
 
 #添加目录 
 #add_subdirectory(../thread)
-add_subdirectory(../structs)
+#add_subdirectory(../structs)
+include_directories(../structs)
 
 MESSAGE(${PROJECT_BINARY_DIR})
 #link_libraries(${PROJECT_BINARY_DIR}/panUtils/structs/panutils_structs)
