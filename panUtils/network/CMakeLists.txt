@@ -8,5 +8,8 @@ source_group("Include" FILES ${CURRENT_HEADERS})
 
 #添加目录 
 #add_subdirectory(../thread)
+#add_subdirectory(../structs)
+
+link_libraries("../structs/panutils_structs")
 
 add_library(panutils_network ${DIR_STRUCTS_SRCS} ${CURRENT_HEADERS})
