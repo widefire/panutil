@@ -12,7 +12,7 @@ source_group("Include" FILES ${CURRENT_HEADERS})
 #include_directories(../structs)
 
 MESSAGE(${PROJECT_BINARY_DIR})
-link_libraries(/home/panutil/panUtils/structs/panutils_structs)
+#link_libraries(/home/panutil/panUtils/structs/panutils_structs)
 
 
 add_library(panutils_network ${DIR_STRUCTS_SRCS} ${CURRENT_HEADERS})
