@@ -37,4 +37,6 @@ TARGET_LINK_LIBRARIES(Demo  pthread panutils_thread  panutils_network panutils_l
 else()
 TARGET_LINK_LIBRARIES(Demo  panutils_thread panutils_structs panutils_network panutils_log4p panutils_utils)
 ENDIF ()  
-aVPu35FvY8Xf
+#aVPu35FvY8Xf
+#eval `ssh-agent`
+#ssh-add key
