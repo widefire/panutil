@@ -1,0 +1,1 @@
+https://blog.zfanw.com/centos-postgresql-command/

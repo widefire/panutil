@@ -92,5 +92,10 @@ namespace panutils {
 
 	std::shared_ptr<std::vector<char>>	Locale_2_UTF_8(const char *input, int inputLen);
 	std::shared_ptr<std::vector<char>> UTF_8_2_Locale(const char *input, int inputLen);
+
+	template<typename T>
+	inline bool RealEqual(T &a, T &b, T tolerance) {
+		return std::abs(a - b) < tolerance;
+	}
 }
 
