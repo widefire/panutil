@@ -6,3 +6,6 @@ vim server.properties
 
 bin/kafka-server-start.sh config/server.properties 
 后台启动 bin/kafka-server-start.sh config/server.properties 1>/dev/null 2>&1 &
+
+删除休眠文件
+powercfg -h off
